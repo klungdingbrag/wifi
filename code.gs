@@ -1,5 +1,5 @@
 /* ============================================================
- * NUSANTARA WIFI V6.3 — HARDENED BACKEND
+ * NUSANTARA WIFI V6.4 — PAYMENT REVERSAL / HARDENED BACKEND
  * ============================================================ */
 
 function jsonResponse_(payload) {
@@ -29,6 +29,7 @@ function doPost(e) {
       case 'updateCustomerStatus': result = updateCustomerStatus(body.rowIndex, body.status, body.customerId); break;
       case 'deleteCustomer': result = deleteCustomer(body.rowIndex, body.customerId); break;
       case 'payBill': result = payBill(body.rowIndex, body.method, body.note, body.billId); break;
+      case 'cancelPayment': result = cancelPayment(body.billId, body.reason); break;
       case 'generateMonthlyBills': result = generateMonthlyBills(body.requestedPeriod); break;
       case 'repairDatabase': result = repairDatabase(); break;
       default: throw new Error('Action POST tidak dikenal: ' + action);
@@ -112,7 +113,25 @@ function generatePaymentId_(){
   data.forEach(row=>{const m=String(row['ID Pembayaran']||'').match(/PAY-(\d+)/i);if(m)max=Math.max(max,Number(m[1]));});
   return 'PAY-'+String(max+1).padStart(4,'0');
 }
-function getPaymentForBill_(billId){return readSheetObjects_('Pembayaran').filter(p=>String(p['ID Tagihan']||'')===String(billId));}
+function ensurePaymentStatusColumn_(payment) {
+  const lastCol = payment.getLastColumn();
+  if (lastCol < 1) throw new Error('Sheet Pembayaran tidak valid.');
+  const headers = payment.getRange(1,1,1,lastCol).getValues()[0].map(String);
+  let idx = headers.indexOf('Status');
+  if (idx < 0) {
+    idx = lastCol;
+    payment.getRange(1,lastCol+1).setValue('Status');
+    return idx + 1;
+  }
+  return idx + 1;
+}
+function getPaymentForBill_(billId, includeCanceled) {
+  return readSheetObjects_('Pembayaran').filter(p => {
+    if (String(p['ID Tagihan']||'') !== String(billId)) return false;
+    if (includeCanceled) return true;
+    return String(p.Status || 'Valid') !== 'Dibatalkan';
+  });
+}
 function writeAudit_(action,sheetName,reference,description){const sh=getSpreadsheet_().getSheetByName('Audit_Log');if(sh)sh.appendRow([new Date(),getCurrentUser_(),action||'',sheetName||'',reference||'',description||'']);}
 function parseDateInput_(value){if(!value)return '';if(value instanceof Date)return value;const text=String(value),parts=text.split('-').map(Number);if(parts.length===3&&parts.every(n=>!isNaN(n)))return new Date(parts[0],parts[1]-1,parts[2]);const parsed=new Date(text);return isNaN(parsed.getTime())?'':parsed;}
 
@@ -174,15 +193,16 @@ function payBill(rowIndex,method,note,billId){
     const cv=customerSheet.getDataRange().getValues(),ch=cv[0].map(String),cid=ch.indexOf('ID Pelanggan');if(cid<0)throw new Error('Kolom ID Pelanggan pada Pelanggan tidak ditemukan.');
     if(!cv.slice(1).some(r=>String(r[cid]||'').trim()===customerId))throw new Error('Pelanggan untuk tagihan ini tidak ditemukan pada master pelanggan.');
     const selectedMethod=String(method||'Tunai').trim()||'Tunai',now=new Date(),payId=generatePaymentId_();
+    const statusCol=ensurePaymentStatusColumn_(payment);
     const ph=payment.getRange(1,1,1,payment.getLastColumn()).getValues()[0].map(String),pid=ph.indexOf('ID Pembayaran');
     if(pid>=0&&payment.getDataRange().getValues().slice(1).some(r=>String(r[pid]||'').trim()===payId))throw new Error('ID pembayaran bentrok. Silakan ulangi transaksi.');
 
-    // Schema Pembayaran V5: ID Pembayaran, ID Tagihan, ID Pelanggan, Nama Pelanggan, Periode, Nominal, Tanggal Bayar, Metode, Petugas, Catatan
     const paymentRow=[payId,actualBillId,customerId,customerName,values[3],nominal,now,selectedMethod,getCurrentUser_(),String(note||'')];
     const paymentRowNumber=payment.getLastRow()+1;
     let paymentWritten=false;
     try{
       payment.getRange(paymentRowNumber,1,1,paymentRow.length).setValues([paymentRow]);
+      payment.getRange(paymentRowNumber,statusCol).setValue('Valid');
       SpreadsheetApp.flush();paymentWritten=true;
       bill.getRange(row,7,1,3).setValues([['Lunas',now,selectedMethod]]);SpreadsheetApp.flush();
     }catch(txErr){
@@ -191,6 +211,34 @@ function payBill(rowIndex,method,note,billId){
     }
     writeAudit_('PAYMENT','Tagihan',actualBillId,'Pembayaran dicatat sebesar '+nominal+' dengan ID '+payId);SpreadsheetApp.flush();
     return{success:true,paymentId:payId,message:'Pembayaran berhasil dicatat.'};
+  }finally{lock.releaseLock();}
+}
+
+function cancelPayment(billId,reason){
+  const lock=LockService.getScriptLock();lock.waitLock(15000);
+  try{
+    const ss=getSpreadsheet_(),bill=ss.getSheetByName('Tagihan'),payment=ss.getSheetByName('Pembayaran');
+    if(!bill||!payment)throw new Error('Sheet pembayaran/tagihan tidak ditemukan.');
+    const id=String(billId||'').trim();if(!id)throw new Error('ID tagihan wajib diisi.');
+    const row=findBillRowById_(id);if(!row)throw new Error('Tagihan tidak ditemukan.');
+    const values=bill.getRange(row,1,1,9).getValues()[0],actualId=String(values[0]||'').trim();
+    if(actualId!==id)throw new Error('ID tagihan tidak cocok.');
+    if(String(values[6])!=='Lunas')throw new Error('Tagihan ini belum berstatus Lunas.');
+
+    const activePayments=getPaymentForBill_(id,false);
+    if(activePayments.length===0)throw new Error('Pembayaran aktif untuk tagihan ini tidak ditemukan.');
+    if(activePayments.length>1)throw new Error('Ditemukan lebih dari satu pembayaran aktif. Pembatalan otomatis dihentikan demi keamanan.');
+    const target=activePayments[0],paymentRow=Number(target._rowIndex);if(paymentRow<2||paymentRow>payment.getLastRow())throw new Error('Baris pembayaran tidak valid.');
+    const statusCol=ensurePaymentStatusColumn_(payment),cancelReason=String(reason||'Salah klik / pembayaran dibatalkan').trim()||'Salah klik / pembayaran dibatalkan';
+    const existingNote=String(payment.getRange(paymentRow,10).getValue()||'').trim();
+    const finalNote=existingNote?existingNote+' | Pembatalan: '+cancelReason:'Pembatalan: '+cancelReason;
+
+    payment.getRange(paymentRow,10).setValue(finalNote);
+    payment.getRange(paymentRow,statusCol).setValue('Dibatalkan');
+    bill.getRange(row,7,1,3).setValues([['Belum Bayar','','']]);
+    writeAudit_('CANCEL_PAYMENT','Tagihan',id,'Pembayaran '+String(target['ID Pembayaran']||'')+' dibatalkan. Alasan: '+cancelReason);
+    SpreadsheetApp.flush();
+    return{success:true,paymentId:String(target['ID Pembayaran']||''),message:'Pembayaran dibatalkan. Tagihan dikembalikan menjadi Belum Bayar.'};
   }finally{lock.releaseLock();}
 }
 
@@ -213,8 +261,8 @@ function auditDatabase(){
   const collisionBills=[],groups={};
   bills.forEach(b=>{const id=String(b['ID Pelanggan']||''),name=String(b['Nama']||'').trim(),c=customerMap[id],current=c?String(c['Nama Pelanggan']||'').trim():'';if(c&&name&&current&&name!==current)collisionBills.push({rowIndex:b._rowIndex,billId:b['ID Tagihan'],customerId:id,historicalName:name,currentName:current,period:periodKey_(b['Periode'])});if(c&&name===current){const key=id+'|'+periodKey_(b['Periode'])+'|'+name.toLowerCase();if(!groups[key])groups[key]=[];groups[key].push(b);}});
   const duplicateGroups=Object.keys(groups).map(key=>({key:key,bills:groups[key]})).filter(g=>g.bills.length>1).map(g=>({key:g.key,rows:g.bills.map(b=>({rowIndex:b._rowIndex,billId:b['ID Tagihan'],status:b['Status'],period:periodKey_(b['Periode'])}))}));
-  const paymentBillIds={};payments.forEach(p=>{const id=String(p['ID Tagihan']||'');if(id)paymentBillIds[id]=(paymentBillIds[id]||0)+1;});duplicateGroups.forEach(g=>g.rows.forEach(r=>r.paymentCount=paymentBillIds[String(r.billId)]||0));
-  return{safe:collisionBills.length===0&&duplicateGroups.length===0,customerCount:customers.length,billCount:bills.length,paymentCount:payments.length,collisionCount:collisionBills.length,duplicateGroupCount:duplicateGroups.length,historicalCollisions:collisionBills,duplicateGroups:duplicateGroups};
+  const paymentBillIds={};payments.forEach(p=>{if(String(p.Status||'Valid')==='Dibatalkan')return;const id=String(p['ID Tagihan']||'');if(id)paymentBillIds[id]=(paymentBillIds[id]||0)+1;});duplicateGroups.forEach(g=>g.rows.forEach(r=>r.paymentCount=paymentBillIds[String(r.billId)]||0));
+  return{safe:collisionBills.length===0&&duplicateGroups.length===0,customerCount:customers.length,billCount:bills.length,paymentCount:payments.length,activePaymentCount:Object.keys(paymentBillIds).reduce((s,k)=>s+paymentBillIds[k],0),collisionCount:collisionBills.length,duplicateGroupCount:duplicateGroups.length,historicalCollisions:collisionBills,duplicateGroups:duplicateGroups};
 }
 
 /* repairDatabase intentionally retained for manual maintenance only. */
