@@ -1,6 +1,6 @@
 /**
  * ============================================================
- * NUSANTARA WIFI V5 — BACKEND
+ * NUSANTARA WIFI V6 — BACKEND API
  * ============================================================
  */
 
@@ -331,8 +331,6 @@ function deleteCustomer(rowIndex) {
 
     if (!id) throw new Error('ID pelanggan tidak valid.');
 
-    // Hapus hanya master pelanggan.
-    // Tagihan dan pembayaran TIDAK dihapus agar histori keuangan tetap aman.
     sh.deleteRow(row);
 
     writeAudit_(
@@ -424,6 +422,25 @@ function payBill(rowIndex, method, note) {
  * GENERATE TAGIHAN
  * ========================= */
 
+function normalizePeriod_(value) {
+  if (!value) return '';
+
+  const text = String(value).trim();
+  const match = text.match(/^(\d{4}-\d{2})/);
+  if (match) return match[1];
+
+  const date = new Date(value);
+  if (!isNaN(date.getTime())) {
+    return Utilities.formatDate(
+      date,
+      Session.getScriptTimeZone() || 'Asia/Jakarta',
+      'yyyy-MM'
+    );
+  }
+
+  return text;
+}
+
 function generateMonthlyBills(requestedPeriod) {
   const lock = LockService.getScriptLock();
   lock.waitLock(15000);
@@ -436,7 +453,7 @@ function generateMonthlyBills(requestedPeriod) {
     const bills = readSheetObjects_('Tagihan');
     const settings = getSettings_();
 
-    const period = requestedPeriod ||
+    const period = normalizePeriod_(requestedPeriod) ||
       Utilities.formatDate(
         new Date(),
         Session.getScriptTimeZone() || 'Asia/Jakarta',
@@ -447,9 +464,15 @@ function generateMonthlyBills(requestedPeriod) {
       throw new Error('Format periode harus YYYY-MM.');
     }
 
+    // Normalisasi periode lama yang tersimpan sebagai Date agar
+    // generate tagihan bersifat idempotent dan tidak membuat duplikat.
     const existing = {};
     bills.forEach(b => {
-      existing[String(b['ID Pelanggan']) + '|' + String(b['Periode'])] = true;
+      const customerId = String(b['ID Pelanggan'] || '').trim();
+      const billPeriod = normalizePeriod_(b['Periode']);
+      if (customerId && billPeriod) {
+        existing[customerId + '|' + billPeriod] = true;
+      }
     });
 
     const sh = ss.getSheetByName('Tagihan');
