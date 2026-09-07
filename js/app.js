@@ -111,7 +111,7 @@ function periodNow(){
 
 function loadInitialData(){
   setConnection('loading');
-  if (!API_URL || API_URL.includes('PASTE_YOUR_APPS_SCRIPT')) {
+  if (!API_URL || API_URL.includes('https://script.google.com/macros/s/AKfycbw3xXv41xKe2L2rg3qIaXp_p5wzeSjvotCVrUMgT7SWJiDKBC4rv6DBLeHUkBRsYcQSZg/exec')) {
     setConnection('bad');
     $('loadingScreen').classList.add('hidden');
     $('appShell').classList.remove('hidden');
