@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nusantara WiFi · Diagnostics</title>
+  <style>
+    :root{font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#172033;background:#f5f7fb}
+    *{box-sizing:border-box}body{margin:0}.wrap{max-width:1000px;margin:0 auto;padding:32px 18px 60px}.top{display:flex;justify-content:space-between;gap:16px;align-items:center;margin-bottom:24px}.eyebrow{font-size:12px;font-weight:800;letter-spacing:.14em;color:#68738a}.title{font-size:30px;font-weight:800;margin:4px 0}.sub{color:#6b7487}.actions{display:flex;gap:10px;flex-wrap:wrap}.btn{border:0;border-radius:12px;padding:11px 15px;font-weight:700;cursor:pointer;background:#fff;box-shadow:0 1px 3px #00000012}.btn.primary{background:#172033;color:#fff}.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-bottom:18px}.card{background:#fff;border:1px solid #e7eaf0;border-radius:16px;padding:18px;box-shadow:0 6px 24px #17203308}.label{font-size:12px;color:#7b8495;font-weight:700;text-transform:uppercase;letter-spacing:.05em}.value{font-size:27px;font-weight:800;margin-top:5px}.status{display:inline-flex;align-items:center;gap:7px;margin-top:10px;font-size:13px;font-weight:700}.dot{width:9px;height:9px;border-radius:50%;background:#98a1b2}.ok .dot{background:#20a46b}.warn .dot{background:#e0a11a}.bad .dot{background:#d64b4b}.tests{display:grid;gap:12px}.test{display:flex;justify-content:space-between;gap:20px;align-items:flex-start;padding:16px;border:1px solid #e7eaf0;border-radius:14px}.test h3{margin:0 0 5px;font-size:15px}.test p{margin:0;color:#6b7487;font-size:13px;line-height:1.5}.badge{white-space:nowrap;border-radius:999px;padding:6px 10px;font-size:12px;font-weight:800;background:#eef1f5}.badge.ok{background:#e7f7ef;color:#16764f}.badge.warn{background:#fff5dc;color:#8a6200}.badge.bad{background:#fdeaea;color:#a82f2f}.note{margin-top:18px;color:#6b7487;font-size:13px;line-height:1.6}.error{padding:14px;border-radius:12px;background:#fdeaea;color:#9e3030;display:none;margin-bottom:18px}
+    @media(max-width:720px){.grid{grid-template-columns:1fr}.top{align-items:flex-start;flex-direction:column}.test{flex-direction:column}}
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div><div class="eyebrow">NUSANTARA WIFI · SYSTEM</div><div class="title">Diagnostics</div><div class="sub">Pemeriksaan aman tanpa mengubah database.</div></div>
+    <div class="actions"><button class="btn" id="refresh">Refresh test</button><button class="btn primary" id="openApp">Buka Billing Utama</button></div>
+  </div>
+  <div id="error" class="error"></div>
+  <div class="grid">
+    <div class="card"><div class="label">Koneksi backend</div><div class="value" id="connection">—</div><div class="status" id="connectionStatus"><span class="dot"></span><span>Checking…</span></div></div>
+    <div class="card"><div class="label">Pelanggan aktif</div><div class="value" id="customers">—</div><div class="status"><span>Target billing bulanan</span></div></div>
+    <div class="card"><div class="label">Tagihan tersimpan</div><div class="value" id="bills">—</div><div class="status"><span>Semua periode</span></div></div>
+  </div>
+  <div class="card">
+    <div class="label" style="margin-bottom:12px">Billing Integrity Tests</div>
+    <div class="tests" id="tests"></div>
+    <div class="note"><strong>Catatan:</strong> panel ini bersifat read-only. Tidak membuat pelanggan, tagihan, pembayaran, atau menghapus data. Generate Oktober akan dilakukan dari fungsi billing utama setelah simulasi dinyatakan aman.</div>
+  </div>
+</div>
+<script>
+const API_URL='https://script.google.com/macros/s/AKfycbw3xXv41xKe2L2rg3qIaXp_p5wzeSjvotCVrUMgT7SWJiDKBC4rv6DBLeHUkBRsYcQSZg/exec';
+const APP_URL='https://klungdingbrag.github.io/wifi/';
+const $=id=>document.getElementById(id);
+async function get(action){const r=await fetch(API_URL+'?'+new URLSearchParams({action,_:Date.now()}),{cache:'no-store'});const t=await r.text();let j;try{j=JSON.parse(t)}catch(e){throw Error('Respons backend bukan JSON.')}if(!r.ok||j.success===false)throw Error(j.message||'Request gagal.');return j.data??j}
+function pk(v){const m=String(v||'').match(/^(\d{4})-(\d{2})/);return m?m[1]+'-'+m[2]:String(v||'')}
+function esc(v){return String(v??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
+function add(name,detail,state='ok'){const el=document.createElement('div');el.className='test';el.innerHTML='<div><h3>'+esc(name)+'</h3><p>'+esc(detail)+'</p></div><span class="badge '+state+'">'+(state==='ok'?'PASS':state==='warn'?'CHECK':'FAIL')+'</span>';$('tests').appendChild(el)}
+async function run(){
+  $('error').style.display='none';$('tests').innerHTML='';$('connection').textContent='…';
+  try{
+    const [conn,data,audit]=await Promise.all([get('testConnection'),get('getInitialData'),get('auditDatabase')]);
+    const customers=Array.isArray(data.pelanggan)?data.pelanggan:[], bills=Array.isArray(data.tagihan)?data.tagihan:[];
+    const active=customers.filter(c=>String(c.Status)==='Aktif'), activeIds=new Set(active.map(c=>String(c['ID Pelanggan'])));
+    $('connection').textContent='OK';$('connectionStatus').className='status ok';$('connectionStatus').innerHTML='<span class="dot"></span><span>Backend terhubung</span>';$('customers').textContent=active.length;$('bills').textContent=bills.length;
+    add('Backend connection','Web App dapat merespons request.','ok');
+    add('Database audit',`safe=${audit.safe}; collision=${audit.collisionCount}; duplicate=${audit.duplicateGroupCount}.`,audit.safe&&audit.collisionCount===0&&audit.duplicateGroupCount===0?'ok':'bad');
+    const ids=customers.map(c=>String(c['ID Pelanggan']||''));const uniqueIds=new Set(ids);
+    add('Customer ID uniqueness',`${ids.length} ID pelanggan, ${uniqueIds.size} unik.`,ids.length===uniqueIds.size?'ok':'bad');
+    const inv=bills.map(b=>String(b['ID Tagihan']||'')),uniqueInv=new Set(inv);
+    add('Invoice ID uniqueness',`${inv.length} invoice, ${uniqueInv.size} unik.`,inv.length===uniqueInv.size?'ok':'bad');
+    const sep=bills.filter(b=>pk(b['Periode'])==='2026-09'&&activeIds.has(String(b['ID Pelanggan'])));const sepIds=new Set(sep.map(b=>String(b['ID Pelanggan'])));
+    add('September duplicate prevention',`Tagihan aktif September=${sep.length}; pelanggan aktif=${active.length}.`,sep.length===active.length&&sepIds.size===active.length?'ok':'warn');
+    const oct=bills.filter(b=>pk(b['Periode'])==='2026-10'&&activeIds.has(String(b['ID Pelanggan'])));const octIds=new Set(oct.map(b=>String(b['ID Pelanggan'])));const missing=active.filter(c=>!octIds.has(String(c['ID Pelanggan']))).map(c=>c['ID Pelanggan']);
+    add('October dry-run',`Belum membuat data. Existing Oktober=${oct.length}; diperkirakan perlu membuat=${missing.length}.`,missing.length===active.length?'ok':missing.length===0?'warn':'ok');
+    const opGroups={};bills.filter(b=>activeIds.has(String(b['ID Pelanggan']))).forEach(b=>{const k=String(b['ID Pelanggan'])+'|'+pk(b['Periode']);(opGroups[k]??=[]).push(b)});const dup=Object.entries(opGroups).filter(([,v])=>v.length>1);
+    add('Operational duplicate groups',`Ditemukan ${dup.length} grup duplikat berdasarkan pelanggan + periode.`,dup.length===0?'ok':'bad');
+    const currentSepTotal=sep.reduce((s,b)=>s+Number(b.Nominal||0),0);add('September billing total',`Total tagihan aktif September = Rp ${currentSepTotal.toLocaleString('id-ID')}.`,sep.length===active.length?'ok':'warn');
+    add('Payment safety',`Pembayaran tersimpan saat ini=${Array.isArray(data.pembayaran)?data.pembayaran.length:0}. Tidak ada transaksi pembayaran yang dibuat oleh diagnostics.`,'ok');
+  }catch(e){$('connection').textContent='ERROR';$('connectionStatus').className='status bad';$('connectionStatus').innerHTML='<span class="dot"></span><span>Gagal terhubung</span>';$('error').textContent=e.message||String(e);$('error').style.display='block'}
+}
+$('refresh').onclick=run;$('openApp').onclick=()=>location.href=APP_URL;run();
+</script>
+</body>
+</html>
