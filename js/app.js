@@ -3,7 +3,7 @@
  * Backend: Google Apps Script Web App
  * ============================================================ */
 
-const API_URL = 'PASTE_YOUR_APPS_SCRIPT_WEB_APP_URL_HERE';
+const API_URL = 'https://script.google.com/macros/s/AKfycbw3xXv41xKe2L2rg3qIaXp_p5wzeSjvotCVrUMgT7SWJiDKBC4rv6DBLeHUkBRsYcQSZg/exec';
 
 async function apiGet(action, params = {}) {
   const query = new URLSearchParams({ action, ...params });
