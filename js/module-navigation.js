@@ -9,6 +9,10 @@
     if(document.getElementById('themeSystemLoader'))return;
     const s=document.createElement('script');s.id='themeSystemLoader';s.src='js/theme-system.js';s.async=false;document.head.appendChild(s);
   }
+  function loadModulePolish(){
+    if(document.getElementById('modulePolishStyle'))return;
+    const l=document.createElement('link');l.id='modulePolishStyle';l.rel='stylesheet';l.href='css/module-polish.css';document.head.appendChild(l);
+  }
   function installMobileSidebarStyle(){
     if(document.getElementById('mobileSidebarRuntimeStyle'))return;
     const style=document.createElement('style');style.id='mobileSidebarRuntimeStyle';
@@ -20,7 +24,7 @@
   function syncSidebarOverlay(){const sidebar=document.getElementById('sidebar');setSidebarOverlay(!!sidebar?.classList.contains('open'));}
   function navigateTo(page,push=true){if(!validPages.has(page))page='dashboard';if(typeof window.showPage==='function')window.showPage(page);document.body.dataset.currentPage=page;closeMobileSidebar();scrollPageTop();if(push&&window.history&&window.history.replaceState){const hash='#'+page;if(window.location.hash!==hash)window.history.pushState({page},'',hash);}}
   window.addEventListener('DOMContentLoaded',function(){
-    loadThemeSystem();installMobileSidebarStyle();
+    loadThemeSystem();loadModulePolish();installMobileSidebarStyle();
     const sidebar=document.getElementById('sidebar'),menu=document.getElementById('mobileMenu');
     if(sidebar&&!document.getElementById('sidebarOverlay')){const overlay=document.createElement('div');overlay.id='sidebarOverlay';overlay.className='sidebar-overlay';overlay.setAttribute('aria-hidden','true');document.body.appendChild(overlay);overlay.addEventListener('click',closeMobileSidebar);}
     menu?.addEventListener('click',function(){requestAnimationFrame(function(){syncSidebarOverlay();if(sidebar?.classList.contains('open'))scrollPageTop();});});
