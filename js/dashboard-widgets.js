@@ -6,6 +6,9 @@
 'use strict';
 
 function renderDashboardWidgets(){
+  const period=$('billPeriod')?.value||periodNow();
+  const label=$('dashboardPeriodLabel');
+  if(label) label.textContent=period||'periode terpilih';
   renderDashboardCustomers();
   renderDashboardHistory();
 }
@@ -18,7 +21,7 @@ function renderDashboardCustomers(){
     const active=String(c.Status)==='Aktif';
     const paket=String(c['Paket Speed']||'').trim();
     const paketLabel=paket&&!/mbps/i.test(paket)?paket+' Mbps':paket||'Paket belum diisi';
-    return `<div class="dashboard-customer-item"><div class="dashboard-customer-avatar">${esc(initialsOf(c['Nama Pelanggan']))}</div><div class="dashboard-customer-main"><div class="dashboard-customer-name">${esc(c['Nama Pelanggan']||c['ID Pelanggan']||'Pelanggan')}</div><div class="dashboard-customer-meta">${esc(c['ID Pelanggan']||'-')} · ${esc(paketLabel)}</div></div><span class="dashboard-customer-status" style="${active?'':'background:#f5f1f2;color:#a87178'}">${active?'Aktif':'Nonaktif'}</span></div>`;
+    return `<div class="dashboard-customer-item"><div class="dashboard-customer-avatar">${esc(initialsOf(c['Nama Pelanggan']))}</div><div class="dashboard-customer-main"><div class="dashboard-customer-name">${esc(c['Nama Pelanggan']||c['ID Pelanggan']||'Pelanggan')}</div><div class="dashboard-customer-meta">${esc(c['ID Pelanggan']||'-')} · ${esc(paketLabel)}</div></div><span class="dashboard-customer-status ${active?'':'is-inactive'}">${active?'Aktif':'Nonaktif'}</span></div>`;
   }).join(''):'<div class="dashboard-empty"><strong>Belum ada pelanggan</strong>Data pelanggan akan tampil di sini.</div>';
 }
 
