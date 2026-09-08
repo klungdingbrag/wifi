@@ -1,0 +1,98 @@
+/* ============================================================
+ * NUSANTARA WIFI — DESIGN SYSTEM + THEME
+ * UI only. No backend or data logic.
+ * ============================================================ */
+(function(){
+  'use strict';
+  const KEY='nusantara-theme';
+  const STYLE_ID='nusantara-theme-system';
+
+  function injectStyle(){
+    if(document.getElementById(STYLE_ID)) return;
+    const s=document.createElement('style');
+    s.id=STYLE_ID;
+    s.textContent=`
+:root{
+  --ds-bg:#f5f7fb;--ds-surface:#fff;--ds-surface-2:#f8fafc;--ds-text:#26364a;--ds-text-2:#53647a;--ds-muted:#7b8798;--ds-line:#e4e9f0;
+  --ds-primary:#6685a8;--ds-primary-strong:#526f90;--ds-primary-soft:#edf3f9;--ds-success:#6f9a86;--ds-success-soft:#edf6f1;--ds-warning:#b58c5a;--ds-warning-soft:#faf4e9;--ds-danger:#a87178;--ds-danger-soft:#faf0f1;
+  --ds-shadow:0 8px 26px rgba(49,68,91,.045);
+}
+html[data-theme="dark"]{
+  color-scheme:dark;
+  --ds-bg:#151a21;--ds-surface:#1d242d;--ds-surface-2:#202934;--ds-text:#e3e8ee;--ds-text-2:#b7c1cd;--ds-muted:#8e9aaa;--ds-line:#303a46;
+  --ds-primary:#87a6c8;--ds-primary-strong:#a1b9d4;--ds-primary-soft:#253448;--ds-success:#82ad99;--ds-success-soft:#20352d;--ds-warning:#c5a16f;--ds-warning-soft:#3a3023;--ds-danger:#c08a91;--ds-danger-soft:#3a282c;
+  --ds-shadow:0 10px 30px rgba(0,0,0,.18);
+}
+html[data-theme="dark"] body,html[data-theme="dark"] .app-shell{background:var(--ds-bg);color:var(--ds-text)}
+html[data-theme="dark"] .sidebar,html[data-theme="dark"] .topbar,html[data-theme="dark"] .panel,html[data-theme="dark"] .stat-card,html[data-theme="dark"] .quick-card,html[data-theme="dark"] .customer-card,html[data-theme="dark"] .modal-card,html[data-theme="dark"] .search-wrap,html[data-theme="dark"] .input,html[data-theme="dark"] .avatar{background:var(--ds-surface);color:var(--ds-text);border-color:var(--ds-line)}
+html[data-theme="dark"] .nav-item{color:#aab5c2}html[data-theme="dark"] .nav-item:hover{background:#242c36;color:var(--ds-text)}html[data-theme="dark"] .nav-item.active{background:var(--ds-primary-soft);color:var(--ds-primary-strong)}
+html[data-theme="dark"] .nav-item span,html[data-theme="dark"] .eyebrow,html[data-theme="dark"] .panel-kicker,html[data-theme="dark"] .hero-kicker,html[data-theme="dark"] .stat-label,html[data-theme="dark"] th{color:#8996a5}
+html[data-theme="dark"] .brand-title,html[data-theme="dark"] .topbar h1,html[data-theme="dark"] .section-head h3,html[data-theme="dark"] .page-intro h2,html[data-theme="dark"] .primary-text,html[data-theme="dark"] .customer-name{color:var(--ds-text)}
+html[data-theme="dark"] .brand-subtitle,html[data-theme="dark"] .page-intro p,html[data-theme="dark"] .item-meta,html[data-theme="dark"] .customer-id,html[data-theme="dark"] .stat-foot,html[data-theme="dark"] .muted-text,html[data-theme="dark"] .info-row span:first-child,html[data-theme="dark"] .audit-desc,html[data-theme="dark"] .audit-time{color:var(--ds-muted)}
+html[data-theme="dark"] .hero{background:linear-gradient(135deg,#202a35,#1b232d);border-color:var(--ds-line)}
+html[data-theme="dark"] .hero h2,html[data-theme="dark"] .hero h2 span{color:var(--ds-text)}html[data-theme="dark"] .hero p{color:var(--ds-muted)}
+html[data-theme="dark"] .btn-soft{background:#27303a;color:#c2cbd5;border-color:#394451}html[data-theme="dark"] .btn-white{background:#252e38;color:#c2cbd5;border-color:#3a4653}
+html[data-theme="dark"] .quick-card{background:#202831;border-color:var(--ds-line)}html[data-theme="dark"] .quick-card:hover{background:#252f39}
+html[data-theme="dark"] .quick-icon,html[data-theme="dark"] .customer-avatar,html[data-theme="dark"] .empty-icon{background:var(--ds-primary-soft);color:var(--ds-primary)}
+html[data-theme="dark"] .input::placeholder{color:#6f7d8d}html[data-theme="dark"] .input:focus{border-color:#536b84;box-shadow:0 0 0 3px #26384a}
+html[data-theme="dark"] th{background:#202731;border-bottom-color:var(--ds-line)}html[data-theme="dark"] td{border-bottom-color:#2a333e;color:var(--ds-text-2)}html[data-theme="dark"] tbody tr:hover td{background:#222b35}
+html[data-theme="dark"] .customer-info,html[data-theme="dark"] .modal-foot,html[data-theme="dark"] .audit-item,html[data-theme="dark"] .outstanding-item{border-color:#2c3540}
+html[data-theme="dark"] .badge-paid,html[data-theme="dark"] .badge-active{background:var(--ds-success-soft);color:#91bca7}html[data-theme="dark"] .badge-unpaid{background:var(--ds-warning-soft);color:#d0af7b}html[data-theme="dark"] .badge-inactive{background:#2b323b;color:#9ba6b3}
+html[data-theme="dark"] .modal-backdrop{background:rgba(4,8,13,.62)}html[data-theme="dark"] .modal-close{background:#29323c;color:#aab5c1}html[data-theme="dark"] .payment-summary{background:#222b35;border-color:#313b46}
+html[data-theme="dark"] .toast{background:#e1e7ed;color:#18212b}
+html[data-theme="dark"] .dashboard-trend,html[data-theme="dark"] .dashboard-focus,html[data-theme="dark"] .dashboard-widget{background:var(--ds-surface);border-color:var(--ds-line);box-shadow:var(--ds-shadow)}
+html[data-theme="dark"] .dashboard-analytics-title,html[data-theme="dark"] .dashboard-focus-title,html[data-theme="dark"] .dashboard-widget-head h3{color:var(--ds-text)}html[data-theme="dark"] .dashboard-chart .chart-grid{stroke:#34404d}html[data-theme="dark"] .dashboard-chart .chart-area{fill:#26384a}
+
+.theme-toggle{width:38px;height:38px;border:1px solid var(--ds-line);border-radius:11px;background:var(--ds-surface);color:var(--ds-text-2);display:inline-flex;align-items:center;justify-content:center;font-size:15px;cursor:pointer;transition:.18s ease}
+.theme-toggle:hover{background:var(--ds-surface-2);transform:translateY(-1px)}
+.theme-toggle:active{transform:translateY(0) scale(.97)}
+.theme-toggle-label{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+
+/* Module polish */
+.module-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:0 0 14px}
+.module-summary>*{min-width:0}
+.module-tip{display:flex;gap:8px;align-items:center;padding:10px 12px;margin-bottom:13px;border:1px solid var(--ds-line);border-radius:11px;background:var(--ds-surface-2);color:var(--ds-muted);font-size:10px}
+.module-tip strong{color:var(--ds-primary-strong);font-size:10px}
+.page-actions{display:flex;gap:8px;align-items:center}
+.module-summary .summary-card,.module-summary .module-stat{background:var(--ds-surface);border:1px solid var(--ds-line);border-radius:13px;padding:12px 13px;box-shadow:var(--ds-shadow)}
+.module-summary .summary-label,.module-summary .module-stat-label{font-size:9px;color:var(--ds-muted);text-transform:uppercase;letter-spacing:.7px;font-weight:800}
+.module-summary .summary-value,.module-summary .module-stat-value{display:block;margin-top:5px;font-size:17px;font-weight:800;color:var(--ds-text)}
+.module-summary .summary-meta,.module-summary .module-stat-meta{font-size:9px;color:var(--ds-muted);margin-top:2px}
+
+/* Make action hierarchy clearer without harsh contrast */
+.btn-primary{background:var(--ds-primary);color:#fff}.btn-primary:hover{background:var(--ds-primary-strong)}
+.btn-success{background:var(--ds-success-soft);color:var(--ds-success)}.btn-danger{background:var(--ds-danger-soft);color:var(--ds-danger)}
+.badge-paid,.badge-active{background:var(--ds-success-soft);color:var(--ds-success)}.badge-unpaid{background:var(--ds-warning-soft);color:var(--ds-warning)}
+
+@media(max-width:900px){.module-summary{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:520px){.module-summary{grid-template-columns:1fr 1fr}.module-tip{align-items:flex-start}.theme-toggle{width:36px;height:36px}}
+`;
+    document.head.appendChild(s);
+  }
+
+  function apply(theme){
+    const t=theme==='dark'?'dark':'light';
+    document.documentElement.dataset.theme=t;
+    try{localStorage.setItem(KEY,t)}catch(e){}
+    const b=document.getElementById('themeToggle');
+    if(b){b.innerHTML=t==='dark'?'☀':'☾';b.title=t==='dark'?'Gunakan Light Mode':'Gunakan Dark Mode';b.setAttribute('aria-label',b.title)}
+  }
+
+  function addToggle(){
+    if(document.getElementById('themeToggle'))return;
+    const actions=document.querySelector('.top-actions');
+    if(!actions)return;
+    const b=document.createElement('button');
+    b.id='themeToggle';b.className='theme-toggle';b.type='button';
+    const avatar=document.querySelector('.top-actions .avatar');
+    if(avatar) actions.insertBefore(b,avatar); else actions.appendChild(b);
+    b.addEventListener('click',()=>apply(document.documentElement.dataset.theme==='dark'?'light':'dark'));
+  }
+
+  function boot(){
+    injectStyle();
+    let saved='light';try{saved=localStorage.getItem(KEY)||'light'}catch(e){}
+    apply(saved);addToggle();
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
+})();
