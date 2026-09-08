@@ -46,7 +46,6 @@ function billRow(b, dashboard=false) {
   return `<tr><td><div class="primary-text">${esc(name)}</div><div class="muted-text">${esc(b['ID Pelanggan'])}</div></td><td>${esc(periodKey(b.Period))}</td><td>${dateShort(b['Jatuh Tempo'])}</td><td class="money">${money(b.Nominal)}</td><td><span class="badge ${unpaid?'badge-unpaid':'badge-paid'}">${esc(b.Status)}</span></td><td><div class="table-actions">${paymentAction}<button class="btn btn-success btn-mini" onclick="sendBillWA(${Number(b._rowIndex)})">WA</button></div></td></tr>`;
 }
 
-/* Show payment status in the payment history without breaking old records. */
 function renderPayments() {
   const list = APP.pembayaran.slice().sort((a,b)=>String(b['Tanggal Bayar']).localeCompare(String(a['Tanggal Bayar'])));
   $('paymentEmpty')?.classList.toggle('hidden', list.length > 0);
@@ -57,9 +56,8 @@ function renderPayments() {
   }).join('');
 }
 
-/* Dashboard fix: the backend uses the canonical Period field. Older data may use Periode.
- * Keep both forms supported so the UI never silently shows zero billing data. */
 function billPeriodValue(b){ return b?.Period ?? b?.Periode ?? ''; }
+
 function renderDashboard(){
   const active = APP.pelanggan.filter(c => String(c.Status) === 'Aktif');
   const ids = new Set(active.map(c => String(c['ID Pelanggan'])));
@@ -78,4 +76,18 @@ function renderDashboard(){
   target.innerHTML = unpaid.length
     ? `<div class="list-stack">${unpaid.slice(0,6).map(b=>billRow(b,true)).join('')}</div>`
     : '<div class="empty-state"><div class="empty-icon">✓</div><strong>Semua tagihan aman</strong><span>Tidak ada tagihan aktif yang perlu ditindaklanjuti.</span></div>';
+}
+
+function renderBills(){
+  const q=String($('billSearch')?.value||'').toLowerCase().trim();
+  const period=$('billPeriod')?.value||periodNow();
+  const status=$('billStatus')?.value||'';
+  const ids=getActiveCustomerIds();
+  const list=APP.tagihan.filter(b=>{
+    const hay=[b['ID Tagihan'],b['ID Pelanggan'],b['Nama'],billPeriodValue(b)].join(' ').toLowerCase();
+    return ids.has(String(b['ID Pelanggan'])) && periodKey(billPeriodValue(b))===period && (!q||hay.includes(q)) && (!status||b.Status===status);
+  });
+  if(!$('billTableBody')) return;
+  $('billTableBody').innerHTML=list.map(b=>billRow(b,false)).join('');
+  $('billEmpty')?.classList.toggle('hidden',list.length>0);
 }
