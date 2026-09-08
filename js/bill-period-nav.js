@@ -19,11 +19,17 @@
     return new Intl.DateTimeFormat('id-ID',{month:'long',year:'numeric'}).format(new Date(y,m-1,1));
   }
 
+  function periodParts(value){
+    const [y,m]=String(value||'').split('-').map(Number);
+    return {year:y,month:m};
+  }
+
   function setPeriod(value){
     const select=$('billPeriod');
     if(!select)return;
+
+    // The select remains the single source of truth for the existing billing renderer.
     select.value=value;
-    // Keep the existing renderer as the single source of truth.
     select.dispatchEvent(new Event('change',{bubbles:true}));
     renderNav();
   }
@@ -31,25 +37,58 @@
   function renderNav(){
     const select=$('billPeriod'),nav=$('billPeriodNav');
     if(!select||!nav)return;
+
     const current=select.value||periodNow();
-    const prev=shiftPeriod(current,-1), next=shiftPeriod(current,1), now=periodNow();
+    const prev=shiftPeriod(current,-1);
+    const next=shiftPeriod(current,1);
+    const now=periodNow();
+    const currentParts=periodParts(current);
+
     nav.innerHTML=`
-      <button type="button" class="period-nav-btn" data-period="${prev}" title="Lihat tagihan bulan sebelumnya">‹ <span>${labelPeriod(prev)}</span></button>
-      <button type="button" class="period-nav-current ${current===now?'is-current':''}" data-period="${now}" title="Kembali ke bulan ini">${current===now?'Bulan ini':'Kembali ke bulan ini'}</button>
-      <button type="button" class="period-nav-btn" data-period="${next}" title="Lihat tagihan bulan berikutnya"><span>${labelPeriod(next)}</span> ›</button>
+      <button type="button" class="period-nav-btn period-nav-prev" data-period="${prev}" title="Lihat tagihan bulan lalu">
+        <span class="period-nav-arrow" aria-hidden="true">‹</span>
+        <span class="period-nav-copy"><small>Bulan lalu</small><strong>${labelPeriod(prev)}</strong></span>
+      </button>
+      <button type="button" class="period-nav-current ${current===now?'is-current':''}" data-period="${now}" title="Kembali ke tagihan bulan ini">
+        <span class="period-nav-copy"><small>${current===now?'Periode aktif':'Kembali ke'}</small><strong>${current===now?'Bulan ini':labelPeriod(now)}</strong></span>
+      </button>
+      <button type="button" class="period-nav-btn period-nav-next" data-period="${next}" title="Lihat tagihan bulan depan">
+        <span class="period-nav-copy"><small>Bulan depan</small><strong>${labelPeriod(next)}</strong></span>
+        <span class="period-nav-arrow" aria-hidden="true">›</span>
+      </button>
     `;
-    nav.querySelectorAll('[data-period]').forEach(btn=>btn.addEventListener('click',()=>setPeriod(btn.dataset.period)));
+
+    nav.querySelectorAll('[data-period]').forEach(btn=>{
+      btn.addEventListener('click',()=>{
+        if(btn.dataset.period===current)return;
+        nav.classList.add('is-switching');
+        setPeriod(btn.dataset.period);
+        window.setTimeout(()=>nav.classList.remove('is-switching'),180);
+      });
+    });
+
     const caption=$('billPeriodCaption');
-    if(caption)caption.textContent=labelPeriod(current);
+    if(caption){
+      caption.textContent=labelPeriod(current);
+      caption.title=`Periode ${currentParts.year}-${String(currentParts.month).padStart(2,'0')}`;
+    }
   }
 
   function populatePeriodOptions(){
     const select=$('billPeriod');
     if(!select)return;
+
     const existing=new Set();
-    APP.tagihan.forEach(b=>{const p=periodKey(b.Period||b.Periode);if(p)existing.add(p)});
+    (APP.tagihan||[]).forEach(b=>{
+      const p=periodKey(b.Period||b.Periode);
+      if(p)existing.add(p);
+    });
+
     const now=periodNow();
-    existing.add(now); existing.add(shiftPeriod(now,-1)); existing.add(shiftPeriod(now,1));
+    existing.add(now);
+    existing.add(shiftPeriod(now,-1));
+    existing.add(shiftPeriod(now,1));
+
     const values=[...existing].sort().reverse();
     const current=select.value||now;
     select.innerHTML=values.map(p=>`<option value="${p}">${labelPeriod(p)}</option>`).join('');
@@ -57,19 +96,25 @@
   }
 
   function init(){
-    const select=$('billPeriod');
-    if(!select)return;
-    const toolbar=select.closest('.toolbar');
-    if(!toolbar||$('billPeriodNav'))return;
+    const select=$('billPeriod'),nav=$('billPeriodNav');
+    if(!select||!nav)return;
 
-    const wrap=document.createElement('div');
-    wrap.className='bill-period-wrap';
-    wrap.innerHTML=`<div class="bill-period-heading"><span>Periode tagihan</span><strong id="billPeriodCaption"></strong></div><div id="billPeriodNav" class="bill-period-nav"></div>`;
-    toolbar.insertBefore(wrap,select);
+    // The navigation markup already exists in index.html.
+    // Do NOT abort merely because #billPeriodNav exists.
+    const toolbar=select.closest('.toolbar');
+    if(!toolbar)return;
+
     select.classList.add('bill-period-select');
     select.setAttribute('aria-label','Pilih periode tagihan');
 
-    select.addEventListener('change',renderNav);
+    if(!select.dataset.periodNavBound){
+      select.addEventListener('change',()=>{
+        renderNav();
+        // Keep the original app renderer responsible for the table/dashboard.
+      });
+      select.dataset.periodNavBound='1';
+    }
+
     populatePeriodOptions();
     renderNav();
   }
