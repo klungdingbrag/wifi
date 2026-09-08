@@ -7,6 +7,14 @@
 
   const validPages = new Set(['dashboard','tagihan','pelanggan','pembayaran','histori']);
 
+  function installMobileSidebarStyle(){
+    if(document.getElementById('mobileSidebarRuntimeStyle'))return;
+    const style=document.createElement('style');
+    style.id='mobileSidebarRuntimeStyle';
+    style.textContent='.sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(38,54,74,.18);backdrop-filter:blur(1.5px);z-index:19;opacity:0;transition:opacity .18s ease;cursor:pointer}.sidebar-overlay.show{display:block;opacity:1}@media(max-width:800px){.sidebar-overlay.show{display:block}}';
+    document.head.appendChild(style);
+  }
+
   function scrollPageTop(){
     window.scrollTo({top:0,left:0,behavior:'auto'});
     document.querySelector('.main')?.scrollTo({top:0,left:0,behavior:'auto'});
@@ -40,11 +48,10 @@
   }
 
   window.addEventListener('DOMContentLoaded',function(){
+    installMobileSidebarStyle();
     const sidebar=document.getElementById('sidebar');
     const menu=document.getElementById('mobileMenu');
 
-    /* One transparent layer sits above the page when the mobile sidebar is open.
-       Tapping anywhere outside the sidebar closes it immediately. */
     if(sidebar && !document.getElementById('sidebarOverlay')){
       const overlay=document.createElement('div');
       overlay.id='sidebarOverlay';
