@@ -19,11 +19,6 @@
     return new Intl.DateTimeFormat('id-ID',{month:'long',year:'numeric'}).format(new Date(y,m-1,1));
   }
 
-  function periodParts(value){
-    const [y,m]=String(value||'').split('-').map(Number);
-    return {year:y,month:m};
-  }
-
   function setPeriod(value){
     const select=$('billPeriod');
     if(!select)return;
@@ -42,19 +37,20 @@
     const prev=shiftPeriod(current,-1);
     const next=shiftPeriod(current,1);
     const now=periodNow();
-    const currentParts=periodParts(current);
 
     nav.innerHTML=`
-      <button type="button" class="period-nav-btn period-nav-prev" data-period="${prev}" title="Lihat tagihan bulan lalu">
-        <span class="period-nav-arrow" aria-hidden="true">‹</span>
-        <span class="period-nav-copy"><small>Bulan lalu</small><strong>${labelPeriod(prev)}</strong></span>
+      <button type="button" class="period-nav-btn period-nav-prev" data-period="${prev}" title="Lihat tagihan bulan sebelumnya">
+        <span class="period-nav-arrow" aria-hidden="true">←</span>
+        <span>Bulan Sebelumnya</span>
       </button>
+
       <button type="button" class="period-nav-current ${current===now?'is-current':''}" data-period="${now}" title="Kembali ke tagihan bulan ini">
-        <span class="period-nav-copy"><small>${current===now?'Periode aktif':'Kembali ke'}</small><strong>${current===now?'Bulan ini':labelPeriod(now)}</strong></span>
+        <span>Bulan Ini</span>
       </button>
-      <button type="button" class="period-nav-btn period-nav-next" data-period="${next}" title="Lihat tagihan bulan depan">
-        <span class="period-nav-copy"><small>Bulan depan</small><strong>${labelPeriod(next)}</strong></span>
-        <span class="period-nav-arrow" aria-hidden="true">›</span>
+
+      <button type="button" class="period-nav-btn period-nav-next" data-period="${next}" title="Lihat tagihan bulan berikutnya">
+        <span>Bulan Berikutnya</span>
+        <span class="period-nav-arrow" aria-hidden="true">→</span>
       </button>
     `;
 
@@ -70,7 +66,7 @@
     const caption=$('billPeriodCaption');
     if(caption){
       caption.textContent=labelPeriod(current);
-      caption.title=`Periode ${currentParts.year}-${String(currentParts.month).padStart(2,'0')}`;
+      caption.title=`Periode ${current}`;
     }
   }
 
@@ -100,7 +96,6 @@
     if(!select||!nav)return;
 
     // The navigation markup already exists in index.html.
-    // Do NOT abort merely because #billPeriodNav exists.
     const toolbar=select.closest('.toolbar');
     if(!toolbar)return;
 
