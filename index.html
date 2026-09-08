@@ -8,76 +8,44 @@
   <link rel="stylesheet" href="css/ui-loading.css">
   <link rel="stylesheet" href="css/refactor-ui.css">
   <link rel="stylesheet" href="css/dashboard-pro.css">
+  <link rel="stylesheet" href="css/module-pages.css">
 </head>
-
 <body>
-<div id="loadingScreen" class="loading-screen">
-  <div class="loading-card">
-    <div class="brand-mark large">NW</div>
-    <div class="loading-title">Nusantara WiFi</div>
-    <div class="loading-sub">Menyiapkan dashboard...</div>
-    <div class="loader"></div>
-  </div>
-</div>
-
+<div id="loadingScreen" class="loading-screen"><div class="loading-card"><div class="brand-mark large">NW</div><div class="loading-title">Nusantara WiFi</div><div class="loading-sub">Menyiapkan dashboard...</div><div class="loader"></div></div></div>
 <div id="appShell" class="app-shell hidden">
   <aside class="sidebar" id="sidebar">
     <div class="brand"><div class="brand-mark">NW</div><div><div class="brand-title">Nusantara WiFi</div><div class="brand-subtitle">Customer Billing</div></div></div>
     <nav class="nav">
-      <button class="nav-item active" data-page="dashboard"><span>⌂</span><b>Dashboard</b></button>
-      <button class="nav-item" data-page="tagihan"><span>▣</span><b>Tagihan</b></button>
-      <button class="nav-item" data-page="pelanggan"><span>◉</span><b>Pelanggan</b></button>
-      <button class="nav-item" data-page="pembayaran"><span>✓</span><b>Pembayaran</b></button>
-      <button class="nav-item" data-page="histori"><span>↺</span><b>Histori</b></button>
-      <a class="nav-item nav-external" href="https://klungdingbrag.github.io/absensi/" target="_blank" rel="noopener noreferrer"><span>◷</span><b>Absensi Karyawan</b><span class="nav-external-arrow">↗</span></a>
+      <div class="nav-group"><div class="nav-group-label">OVERVIEW</div><button class="nav-item active" data-page="dashboard"><span>⌂</span><b>Dashboard</b></button></div>
+      <div class="nav-group"><div class="nav-group-label">OPERASIONAL</div><button class="nav-item" data-page="tagihan"><span>▣</span><b>Tagihan</b></button><button class="nav-item" data-page="pembayaran"><span>✓</span><b>Pembayaran</b></button></div>
+      <div class="nav-group"><div class="nav-group-label">PELANGGAN</div><button class="nav-item" data-page="pelanggan"><span>◉</span><b>Pelanggan</b></button></div>
+      <div class="nav-group"><div class="nav-group-label">SISTEM</div><button class="nav-item" data-page="histori"><span>↺</span><b>Histori</b></button></div>
+      <div class="nav-group"><div class="nav-group-label">INTERNAL</div><a class="nav-item nav-external" href="https://klungdingbrag.github.io/absensi/" target="_blank" rel="noopener noreferrer"><span>◷</span><b>Absensi Karyawan</b><span class="nav-external-arrow">↗</span></a></div>
     </nav>
     <div class="sidebar-bottom"><div class="connection"><span id="connectionDot"></span><span id="connectionText">Menghubungkan...</span></div><div class="sidebar-note">Sistem billing sederhana untuk operasional WiFi harian.</div></div>
   </aside>
-
   <main class="main">
-    <header class="topbar">
-      <div class="topbar-left"><button class="mobile-menu" id="mobileMenu">☰</button><div><div class="eyebrow" id="pageEyebrow">OVERVIEW</div><h1 id="pageTitle">Dashboard</h1></div></div>
-      <div class="top-actions"><button class="btn btn-soft" id="refreshBtn">↻ <span>Refresh</span></button><div class="avatar">NW</div></div>
-    </header>
-
+    <header class="topbar"><div class="topbar-left"><button class="mobile-menu" id="mobileMenu">☰</button><div><div class="eyebrow" id="pageEyebrow">OVERVIEW</div><h1 id="pageTitle">Dashboard</h1></div></div><div class="top-actions"><button class="btn btn-soft" id="refreshBtn">↻ <span>Refresh</span></button><div class="avatar">NW</div></div></header>
     <section id="page-dashboard" class="page active dashboard-overview">
       <div class="hero"><div><div class="hero-kicker">NUSANTARA WIFI</div><h2>Kelola pelanggan & tagihan<br><span>dengan lebih tenang.</span></h2><p>Monitor tagihan, catat pembayaran, dan kirim pengingat WhatsApp dari satu tempat.</p></div><div class="hero-actions"><button class="btn btn-primary" id="heroAddCustomer">+ Pelanggan Baru</button><button class="btn btn-white" id="heroGenerate">Buat Tagihan</button></div></div>
       <div class="stats-grid"><div class="stat-card"><div class="stat-label">PELANGGAN AKTIF</div><div class="stat-value" id="statCustomers">0</div><div class="stat-foot">Pelanggan aktif</div></div><div class="stat-card"><div class="stat-label">TAGIHAN BERJALAN</div><div class="stat-value" id="statBills">0</div><div class="stat-foot">Periode terpilih</div></div><div class="stat-card"><div class="stat-label">BELUM BAYAR</div><div class="stat-value" id="statOutstanding">Rp0</div><div class="stat-foot">Outstanding</div></div><div class="stat-card"><div class="stat-label">SUDAH BAYAR</div><div class="stat-value" id="statPaid">Rp0</div><div class="stat-foot">Periode terpilih</div></div></div>
       <div class="dashboard-period-row"><div class="dashboard-period-label">Ringkasan billing untuk <strong id="dashboardPeriodLabel">periode terpilih</strong></div></div>
       <div class="section-head"><div><div class="panel-kicker">QUICK ACTIONS</div><h3>Operasional</h3></div></div>
       <div class="quick-grid"><button class="quick-card" id="quickCustomer"><span class="quick-icon">＋</span><strong>Tambah pelanggan</strong><small>Daftarkan pelanggan baru</small></button><button class="quick-card" id="quickBill"><span class="quick-icon">▣</span><strong>Buat tagihan</strong><small>Generate tagihan bulanan</small></button><button class="quick-card" id="quickPayment"><span class="quick-icon">✓</span><strong>Catat pembayaran</strong><small>Bayar tagihan pelanggan</small></button></div>
-      <div class="section-head"><div><div class="panel-kicker">FOLLOW UP</div><h3>Tagihan perlu ditindaklanjuti</h3></div><button class="btn btn-soft btn-mini" data-page-link="tagihan">Lihat semua</button></div>
-      <div class="panel"><div id="dashboardOutstanding"></div></div>
-      <div class="dashboard-section-grid">
-        <section class="dashboard-widget">
-          <div class="dashboard-widget-head"><div class="dashboard-widget-title"><span class="dashboard-widget-icon">◉</span><div><h3>Pelanggan</h3><small>Data pelanggan terbaru</small></div></div><button class="dashboard-widget-link" data-page-link="pelanggan">Lihat semua →</button></div>
-          <div class="dashboard-widget-body"><div id="dashboardCustomers" class="dashboard-customer-list"></div></div>
-        </section>
-        <section class="dashboard-widget">
-          <div class="dashboard-widget-head"><div class="dashboard-widget-title"><span class="dashboard-widget-icon">↺</span><div><h3>Histori aplikasi</h3><small>Aktivitas terbaru</small></div></div><button class="dashboard-widget-link" data-page-link="histori">Lihat semua →</button></div>
-          <div class="dashboard-widget-body"><div id="dashboardHistory" class="dashboard-audit-list"></div></div>
-        </section>
-      </div>
+      <div class="section-head"><div><div class="panel-kicker">FOLLOW UP</div><h3>Tagihan perlu ditindaklanjuti</h3></div><button class="btn btn-soft btn-mini" data-page-link="tagihan">Lihat semua</button></div><div class="panel"><div id="dashboardOutstanding"></div></div>
+      <div class="dashboard-section-grid"><section class="dashboard-widget"><div class="dashboard-widget-head"><div class="dashboard-widget-title"><span class="dashboard-widget-icon">◉</span><div><h3>Pelanggan</h3><small>Data pelanggan terbaru</small></div></div><button class="dashboard-widget-link" data-page-link="pelanggan">Lihat semua →</button></div><div class="dashboard-widget-body"><div id="dashboardCustomers" class="dashboard-customer-list"></div></div></section><section class="dashboard-widget"><div class="dashboard-widget-head"><div class="dashboard-widget-title"><span class="dashboard-widget-icon">↺</span><div><h3>Histori aplikasi</h3><small>Aktivitas terbaru</small></div></div><button class="dashboard-widget-link" data-page-link="histori">Lihat semua →</button></div><div class="dashboard-widget-body"><div id="dashboardHistory" class="dashboard-audit-list"></div></div></section></div>
     </section>
-
     <section id="page-tagihan" class="page"><div class="page-intro"><div><div class="panel-kicker">BILLING</div><h2>Tagihan</h2><p>Kelola tagihan pelanggan per periode.</p></div><div class="page-actions"><button class="btn btn-primary" id="newBillBtn">+ Buat tagihan</button></div></div><div class="toolbar"><input id="billSearch" class="input search-input" placeholder="Cari ID, pelanggan..."/><select id="billPeriod" class="input compact-input"></select><select id="billStatus" class="input compact-input"><option value="">Semua status</option><option>Belum Bayar</option><option>Lunas</option></select></div><div class="panel table-panel"><div class="table-scroll"><table><thead><tr><th>PELANGGAN</th><th>PERIODE</th><th>JATUH TEMPO</th><th>NOMINAL</th><th>STATUS</th><th></th></tr></thead><tbody id="billTableBody"></tbody></table></div><div id="billEmpty" class="empty-state hidden"><div class="empty-icon">✓</div><strong>Tidak ada tagihan</strong><span>Tidak ditemukan tagihan sesuai filter.</span></div></div></section>
-
     <section id="page-pelanggan" class="page"><div class="page-intro"><div><div class="panel-kicker">CUSTOMERS</div><h2>Pelanggan</h2><p>Data pelanggan dan status layanan.</p></div><div class="page-actions"><button class="btn btn-primary" id="newCustomerBtn">+ Pelanggan baru</button></div></div><div class="toolbar"><input id="customerSearch" class="input search-input" placeholder="Cari pelanggan, ID, WhatsApp..."/><select id="customerStatus" class="input compact-input"><option value="">Semua status</option><option>Aktif</option><option>Nonaktif</option></select></div><div id="customerGrid" class="customer-grid"></div><div id="customerEmpty" class="empty-state hidden"><div class="empty-icon">◉</div><strong>Belum ada pelanggan</strong><span>Tambahkan pelanggan untuk mulai menggunakan billing.</span></div></section>
-
     <section id="page-pembayaran" class="page"><div class="page-intro"><div><div class="panel-kicker">PAYMENTS</div><h2>Pembayaran</h2><p>Riwayat pembayaran yang sudah dicatat ke sistem.</p></div></div><div class="panel table-panel"><div class="table-scroll"><table><thead><tr><th>ID PEMBAYARAN</th><th>PELANGGAN</th><th>PERIODE</th><th>NOMINAL</th><th>TANGGAL</th><th>METODE</th></tr></thead><tbody id="paymentTableBody"></tbody></table></div><div id="paymentEmpty" class="empty-state hidden"><div class="empty-icon">✓</div><strong>Belum ada pembayaran</strong><span>Pembayaran yang dicatat akan muncul di sini.</span></div></div></section>
-
     <section id="page-histori" class="page"><div class="page-intro"><div><div class="panel-kicker">AUDIT TRAIL</div><h2>Histori</h2><p>Aktivitas penting yang terjadi di aplikasi.</p></div></div><div class="panel"><div id="auditList" class="audit-list"></div><div id="auditEmpty" class="empty-state hidden"><div class="empty-icon">↺</div><strong>Belum ada histori</strong><span>Aktivitas sistem akan muncul di sini.</span></div></div></section>
   </main>
 </div>
-
 <div id="customerModal" class="modal hidden"><div class="modal-backdrop" data-close="customerModal"></div><div class="modal-card"><div class="modal-head"><div><div class="panel-kicker">CUSTOMER FORM</div><h3 id="customerModalTitle">Pelanggan Baru</h3></div><button class="modal-close" data-close="customerModal">×</button></div><form id="customerForm"><input type="hidden" id="customerRowIndex"><div class="form-grid"><label class="field full"><span>Nama pelanggan *</span><input id="fNama" class="input" required></label><label class="field"><span>No. WhatsApp *</span><input id="fWhatsApp" class="input" placeholder="08xxxxxxxxxx" required></label><label class="field"><span>Paket Speed</span><input id="fPaket" class="input" placeholder="Contoh: 10 Mbps"></label><label class="field"><span>Tarif bulanan *</span><input id="fTarif" class="input" type="number" min="0" required></label><label class="field"><span>Tanggal pasang</span><input id="fTanggal" class="input" type="date"></label><label class="field"><span>Status</span><select id="fStatus" class="input"><option>Aktif</option><option>Nonaktif</option></select></label><label class="field full"><span>Alamat</span><textarea id="fAlamat" class="input textarea"></textarea></label><label class="field full"><span>Catatan</span><textarea id="fCatatan" class="input textarea"></textarea></label></div><div class="modal-foot"><button type="button" class="btn btn-danger hidden" id="deleteCustomerBtn">Hapus pelanggan</button><div class="modal-foot-spacer"></div><button type="button" class="btn btn-soft" data-close="customerModal">Batal</button><button type="submit" class="btn btn-primary" id="customerSaveBtn">Simpan pelanggan</button></div></form></div></div>
 <div id="detailModal" class="modal hidden"><div class="modal-backdrop" data-close="detailModal"></div><div class="modal-card detail-card"><div class="modal-head"><div><div class="panel-kicker">CUSTOMER PROFILE</div><h3 id="detailName">Detail Pelanggan</h3></div><button class="modal-close" data-close="detailModal">×</button></div><div id="detailContent"></div></div></div>
 <div id="paymentModal" class="modal hidden"><div class="modal-backdrop" data-close="paymentModal"></div><div class="modal-card small-modal"><div class="modal-head"><div><div class="panel-kicker">PAYMENT</div><h3>Catat Pembayaran</h3></div><button class="modal-close" data-close="paymentModal">×</button></div><form id="paymentForm"><input type="hidden" id="paymentRowIndex"><div id="paymentSummary" class="payment-summary"></div><label class="field"><span>Metode pembayaran</span><select id="paymentMethod" class="input"><option>Tunai</option><option>Transfer Bank</option><option>E-Wallet</option><option>Lainnya</option></select></label><label class="field"><span>Catatan</span><textarea id="paymentNote" class="input textarea" placeholder="Opsional"></textarea></label><div class="modal-foot"><button type="button" class="btn btn-soft" data-close="paymentModal">Batal</button><button type="submit" class="btn btn-primary" id="paymentSaveBtn">Simpan pembayaran</button></div></form></div></div>
 <div id="generateModal" class="modal hidden"><div class="modal-backdrop" data-close="generateModal"></div><div class="modal-card small-modal"><div class="modal-head"><div><div class="panel-kicker">MONTHLY BILLING</div><h3>Buat Tagihan</h3></div><button class="modal-close" data-close="generateModal">×</button></div><div class="generate-info">Sistem hanya membuat tagihan untuk pelanggan <strong>Aktif</strong> yang belum memiliki tagihan pada periode tersebut.</div><label class="field"><span>Periode</span><input id="generatePeriod" class="input" type="month"></label><div class="modal-foot"><button class="btn btn-soft" data-close="generateModal">Batal</button><button class="btn btn-primary" id="confirmGenerate">Buat tagihan</button></div></div></div>
 <div id="toast" class="toast"></div>
-<script src="js/app.js"></script>
-<script src="js/ui-loading.js"></script>
-<script src="js/cancel-payment.js"></script>
-<script src="js/dashboard-widgets.js"></script>
+<script src="js/app.js"></script><script src="js/ui-loading.js"></script><script src="js/cancel-payment.js"></script><script src="js/dashboard-widgets.js"></script>
 </body>
 </html>
