@@ -29,6 +29,77 @@
     document.body.classList.remove('is-syncing');
   }
 
+  function paymentButton(){
+    return document.getElementById('paymentSaveBtn');
+  }
+
+  function setPaymentSaving(){
+    const btn=paymentButton();
+    if(!btn) return;
+    if(!btn.dataset.originalText) btn.dataset.originalText=btn.textContent.trim()||'Simpan Pembayaran';
+    btn.disabled=true;
+    btn.classList.remove('is-success');
+    btn.classList.add('is-saving');
+    btn.setAttribute('aria-busy','true');
+    btn.innerHTML='<span class="payment-spinner" aria-hidden="true"></span><span>Menyimpan...</span>';
+  }
+
+  function resetPaymentButton(){
+    const btn=paymentButton();
+    if(!btn) return;
+    btn.disabled=false;
+    btn.classList.remove('is-saving','is-success');
+    btn.removeAttribute('aria-busy');
+    btn.textContent=btn.dataset.originalText||'Simpan Pembayaran';
+  }
+
+  function paymentSavedFeedback(){
+    const btn=paymentButton();
+    if(!btn) return;
+    btn.classList.remove('is-saving');
+    btn.classList.add('is-success');
+    btn.disabled=true;
+    btn.removeAttribute('aria-busy');
+    btn.innerHTML='<span class="payment-check" aria-hidden="true">✓</span><span>Tersimpan</span>';
+    setTimeout(resetPaymentButton,700);
+  }
+
+  // Capture-phase membuat feedback muncul seketika, sebelum handler pembayaran utama berjalan.
+  document.addEventListener('submit',function(event){
+    if(event.target && event.target.id==='paymentForm') setPaymentSaving();
+  },true);
+
+  // Bila apiPost tersedia, beri state sukses/gagal tanpa mengubah kontrak API utama.
+  const originalApiPost=window.apiPost;
+  if(typeof originalApiPost==='function'){
+    window.apiPost=async function(action,payload){
+      if(action==='payBill'){
+        setPaymentSaving();
+        try{
+          const result=await originalApiPost.apply(this,arguments);
+          if(result && result.success!==false) paymentSavedFeedback();
+          else resetPaymentButton();
+          return result;
+        }catch(error){
+          resetPaymentButton();
+          throw error;
+        }
+      }
+      return originalApiPost.apply(this,arguments);
+    };
+  }
+
+  // Fallback: jika backend gagal/handler lama tidak memakai window.apiPost, jangan biarkan tombol terkunci selamanya.
+  document.addEventListener('click',function(event){
+    const btn=event.target.closest?.('#paymentSaveBtn');
+    if(!btn) return;
+    setPaymentSaving();
+    window.setTimeout(function(){
+      const current=paymentButton();
+      if(current && current.classList.contains('is-saving')) resetPaymentButton();
+    },15000);
+  },true);
+
   // Override hanya mekanisme loading; proses data/API tetap memakai backend V6.3.
   window.loadInitialData = async function(){
     ensureLoadingUI();
