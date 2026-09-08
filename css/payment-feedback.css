@@ -1,0 +1,8 @@
+/* Nusantara WiFi — instant payment button feedback */
+#paymentSaveBtn{position:relative;min-width:155px;transition:transform .12s ease,opacity .18s ease,box-shadow .18s ease,background .18s ease}
+#paymentSaveBtn.is-saving{cursor:wait;pointer-events:none;opacity:.9;transform:scale(.98);box-shadow:none}
+#paymentSaveBtn.is-saving::before{content:"";width:13px;height:13px;border:2px solid rgba(255,255,255,.45);border-top-color:#fff;border-radius:50%;animation:paymentSpin .65s linear infinite;display:inline-block;vertical-align:-2px;margin-right:7px}
+#paymentSaveBtn.is-success{background:var(--success)!important;pointer-events:none}
+#paymentSaveBtn.is-success::before{content:"✓";display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;margin-right:5px;font-weight:900}
+#paymentSummary.is-processing{box-shadow:0 0 0 3px var(--primary-soft);transition:box-shadow .18s ease}
+@keyframes paymentSpin{to{transform:rotate(360deg)}}
