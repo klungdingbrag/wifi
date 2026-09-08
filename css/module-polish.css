@@ -1,0 +1,42 @@
+/* Nusantara WiFi — module visual polish. UI only. */
+.module-summary{margin-bottom:14px}
+.module-kpi{transition:border-color .16s ease,transform .16s ease,box-shadow .16s ease}
+.module-kpi:hover{transform:translateY(-1px);box-shadow:0 10px 28px rgba(49,68,91,.07)}
+.page-intro{padding-bottom:2px}
+.page-intro h2{letter-spacing:-.65px}
+.toolbar{padding:11px;border:1px solid var(--line);border-radius:13px;background:var(--surface);box-shadow:0 5px 18px rgba(49,68,91,.025)}
+.toolbar .search-input{min-width:0}
+.table-panel{box-shadow:0 7px 24px rgba(49,68,91,.035)}
+.table-actions{display:flex;justify-content:flex-end;gap:6px;white-space:nowrap}
+#page-tagihan .table-panel{margin-top:2px}
+#page-tagihan td:last-child,#page-pembayaran td:last-child{text-align:right}
+#page-tagihan tbody tr,#page-pembayaran tbody tr{transition:background .14s ease}
+#page-pelanggan .customer-grid{margin-top:2px}
+#page-pelanggan .customer-actions{margin-top:2px}
+#page-pelanggan .customer-actions .btn{flex:1}
+#page-pembayaran .table-panel,#page-histori .panel{box-shadow:0 7px 24px rgba(49,68,91,.035)}
+#page-pembayaran .money{font-weight:800}
+#page-histori .audit-list{padding:5px 18px}
+#page-histori .audit-item{padding:14px 4px}
+#page-histori .audit-dot{background:var(--primary);box-shadow:0 0 0 4px var(--primary-soft)}
+.empty-state{background:transparent}
+
+html[data-theme="dark"] .toolbar{background:var(--ds-surface);border-color:var(--ds-line);box-shadow:none}
+html[data-theme="dark"] .table-panel,html[data-theme="dark"] #page-pembayaran .table-panel,html[data-theme="dark"] #page-histori .panel{box-shadow:var(--ds-shadow)}
+html[data-theme="dark"] .module-kpi:hover{box-shadow:0 10px 28px rgba(0,0,0,.2)}
+
+@media(max-width:720px){
+  .toolbar{padding:9px;flex-wrap:wrap}
+  .toolbar .search-input{flex:1 1 100%}
+  .toolbar .compact-input{flex:1 1 calc(50% - 5px);min-width:0}
+  .page-intro{align-items:flex-start;flex-direction:column}
+  .page-actions{width:100%}
+  .page-actions .btn{width:100%}
+  #page-pelanggan .customer-actions{flex-wrap:wrap}
+  #page-pelanggan .customer-actions .btn{flex:1 1 calc(50% - 3px)}
+  .table-actions{justify-content:flex-start}
+}
+@media(max-width:430px){
+  .toolbar .compact-input{flex-basis:100%}
+  #page-pelanggan .customer-actions .btn{flex-basis:100%}
+}
