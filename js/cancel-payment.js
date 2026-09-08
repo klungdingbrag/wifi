@@ -52,11 +52,6 @@ function openPaymentModal(row) {
   $('paymentModal').classList.remove('hidden');
 }
 
-/*
- * Payment is confirmed by the backend response itself.
- * billId is sent explicitly so the server can resolve the exact invoice
- * even if the table row changes after a refresh.
- */
 async function savePayment(e) {
   e.preventDefault();
 
@@ -86,11 +81,8 @@ async function savePayment(e) {
       throw new Error(result?.message || 'Backend tidak mengonfirmasi pembayaran.');
     }
 
-    /* Backend V6.4 returns success only after the payment + invoice update
-       has completed successfully. Therefore show success only here. */
     paymentButtonUI('success', 'Tersimpan');
     toast(result.message || 'Pembayaran berhasil dicatat.');
-
     closeModal('paymentModal');
     await loadInitialData();
   } catch (err) {
@@ -128,18 +120,54 @@ function cancelPayment(row) {
   }).catch(err => toast(errorMessage(err), true));
 }
 
-/* Replace billing row renderer so paid invoices have a Batalkan action. */
+function billDueDateKey(value) {
+  const s = String(value || '').trim();
+  const m = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (m) return `${m[1]}-${m[2]}-${m[3]}`;
+  return '';
+}
+
+function isBillOverdue(b) {
+  if (!b || String(b.Status) === 'Lunas') return false;
+  const due = billDueDateKey(b['Jatuh Tempo']);
+  if (!due) return false;
+  const today = new Date();
+  const key = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0') + '-' + String(today.getDate()).padStart(2, '0');
+  return due < key;
+}
+
+function billFollowUpLabel(b) {
+  if (String(b.Status) === 'Lunas') return '';
+  return isBillOverdue(b) ? '<span class="bill-overdue-label">Terlambat</span>' : '<span class="bill-due-label">Belum bayar</span>';
+}
+
+/* Replace billing row renderer so paid invoices have a Batalkan action and
+   overdue invoices are visually prioritized without changing backend data. */
 function billRow(b, dashboard=false) {
   const customer = findCustomer(b['ID Pelanggan']);
   const name = b['Nama'] || customer?.['Nama Pelanggan'] || b['ID Pelanggan'];
   const unpaid = b.Status !== 'Lunas';
+  const overdue = isBillOverdue(b);
+
   if (dashboard) {
-    return `<div class="outstanding-item"><div><div class="item-name">${esc(name)}</div><div class="item-meta">${esc(periodKey(b.Period ?? b.Periode))} · jatuh tempo ${dateShort(b['Jatuh Tempo'])}</div></div><div class="item-money">${money(b.Nominal)}<small>Belum bayar</small></div></div>`;
+    return `<div class="outstanding-item ${overdue ? 'is-overdue' : ''}">
+      <div><div class="item-name">${esc(name)}</div><div class="item-meta">${esc(periodKey(b.Period ?? b.Periode))} · jatuh tempo ${dateShort(b['Jatuh Tempo'])}${overdue ? ' · terlambat' : ''}</div></div>
+      <div class="item-money">${money(b.Nominal)}<small>${overdue ? 'Terlambat' : 'Belum bayar'}</small></div>
+    </div>`;
   }
+
   const paymentAction = unpaid
     ? `<button class="btn btn-primary btn-mini" onclick="openPaymentModal(${Number(b._rowIndex)})">Bayar</button>`
     : `<button class="btn btn-soft btn-mini" onclick="cancelPayment(${Number(b._rowIndex)})">Batalkan</button>`;
-  return `<tr><td><div class="primary-text">${esc(name)}</div><div class="muted-text">${esc(b['ID Pelanggan'])}</div></td><td>${esc(periodKey(b.Period ?? b.Periode))}</td><td>${dateShort(b['Jatuh Tempo'])}</td><td class="money">${money(b.Nominal)}</td><td><span class="badge ${unpaid?'badge-unpaid':'badge-paid'}">${esc(b.Status)}</span></td><td><div class="table-actions">${paymentAction}<button class="btn btn-success btn-mini" onclick="sendBillWA(${Number(b._rowIndex)})">WA</button></div></td></tr>`;
+
+  return `<tr class="${overdue ? 'bill-row-overdue' : ''}">
+    <td><div class="primary-text">${esc(name)}</div><div class="muted-text">${esc(b['ID Pelanggan'])}</div></td>
+    <td>${esc(periodKey(b.Period ?? b.Periode))}</td>
+    <td><div>${dateShort(b['Jatuh Tempo'])}</div>${billFollowUpLabel(b)}</td>
+    <td class="money">${money(b.Nominal)}</td>
+    <td><span class="badge ${unpaid?'badge-unpaid':'badge-paid'}">${esc(b.Status)}</span></td>
+    <td><div class="table-actions">${paymentAction}<button class="btn btn-success btn-mini" onclick="sendBillWA(${Number(b._rowIndex)})">WA</button></div></td>
+  </tr>`;
 }
 
 function renderPayments() {
@@ -169,8 +197,9 @@ function renderDashboard(){
 
   const target = $('dashboardOutstanding');
   if (!target) return;
-  target.innerHTML = unpaid.length
-    ? `<div class="list-stack">${unpaid.slice(0,6).map(b=>billRow(b,true)).join('')}</div>`
+  const sortedUnpaid = unpaid.slice().sort((a,b)=>Number(isBillOverdue(b))-Number(isBillOverdue(a)) || String(a['Jatuh Tempo']||'').localeCompare(String(b['Jatuh Tempo']||'')));
+  target.innerHTML = sortedUnpaid.length
+    ? `<div class="list-stack">${sortedUnpaid.slice(0,6).map(b=>billRow(b,true)).join('')}</div>`
     : '<div class="empty-state"><div class="empty-icon">✓</div><strong>Semua tagihan aman</strong><span>Tidak ada tagihan aktif yang perlu ditindaklanjuti.</span></div>';
 }
 
@@ -183,6 +212,7 @@ function renderBills(){
     const hay=[b['ID Tagihan'],b['ID Pelanggan'],b['Nama'],billPeriodValue(b)].join(' ').toLowerCase();
     return ids.has(String(b['ID Pelanggan'])) && periodKey(billPeriodValue(b))===period && (!q||hay.includes(q)) && (!status||b.Status===status);
   });
+  list.sort((a,b)=>Number(isBillOverdue(b))-Number(isBillOverdue(a)) || String(a['Jatuh Tempo']||'').localeCompare(String(b['Jatuh Tempo']||'')));
   if(!$('billTableBody')) return;
   $('billTableBody').innerHTML=list.map(b=>billRow(b,false)).join('');
   $('billEmpty')?.classList.toggle('hidden',list.length>0);
