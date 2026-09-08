@@ -1,45 +1,12 @@
-/* ============================================================
- * NUSANTARA WIFI — DASHBOARD WIDGETS
- * Customer + application history widgets.
- * Uses existing APP state only; no backend changes.
- * ============================================================ */
+/* NUSANTARA WIFI — DASHBOARD WIDGETS V2 */
 'use strict';
-
-function renderDashboardWidgets(){
-  const period=$('billPeriod')?.value||periodNow();
-  const label=$('dashboardPeriodLabel');
-  if(label) label.textContent=period||'periode terpilih';
-  renderDashboardCustomers();
-  renderDashboardHistory();
-}
-
-function renderDashboardCustomers(){
-  const target=$('dashboardCustomers');
-  if(!target)return;
-  const list=APP.pelanggan.slice().sort((a,b)=>Number(b._rowIndex||0)-Number(a._rowIndex||0)).slice(0,5);
-  target.innerHTML=list.length?list.map(c=>{
-    const active=String(c.Status)==='Aktif';
-    const paket=String(c['Paket Speed']||'').trim();
-    const paketLabel=paket&&!/mbps/i.test(paket)?paket+' Mbps':paket||'Paket belum diisi';
-    return `<div class="dashboard-customer-item"><div class="dashboard-customer-avatar">${esc(initialsOf(c['Nama Pelanggan']))}</div><div class="dashboard-customer-main"><div class="dashboard-customer-name">${esc(c['Nama Pelanggan']||c['ID Pelanggan']||'Pelanggan')}</div><div class="dashboard-customer-meta">${esc(c['ID Pelanggan']||'-')} · ${esc(paketLabel)}</div></div><span class="dashboard-customer-status ${active?'':'is-inactive'}">${active?'Aktif':'Nonaktif'}</span></div>`;
-  }).join(''):'<div class="dashboard-empty"><strong>Belum ada pelanggan</strong>Data pelanggan akan tampil di sini.</div>';
-}
-
-function renderDashboardHistory(){
-  const target=$('dashboardHistory');
-  if(!target)return;
-  const list=APP.auditLog.slice().sort((a,b)=>String(b.Timestamp).localeCompare(String(a.Timestamp))).slice(0,5);
-  target.innerHTML=list.length?list.map(a=>`<div class="dashboard-audit-item"><div class="dashboard-audit-dot"></div><div class="dashboard-audit-main"><div class="dashboard-audit-title">${esc(a.Action||'ACTIVITY')} · ${esc(a.Reference||'')}</div><div class="dashboard-audit-desc">${esc(a.Description||'Aktivitas aplikasi')}</div><div class="dashboard-audit-time">${esc(a.User||'User')} · ${dateTimeShort(a.Timestamp)}</div></div></div>`).join(''):'<div class="dashboard-empty"><strong>Belum ada histori</strong>Aktivitas aplikasi akan tampil di sini.</div>';
-}
-
-const _dashboardOriginalRenderAll=window.renderAll;
-window.renderAll=function(){
-  _dashboardOriginalRenderAll();
-  renderDashboardWidgets();
-};
-
-const _dashboardOriginalRenderDashboard=window.renderDashboard;
-window.renderDashboard=function(){
-  _dashboardOriginalRenderDashboard();
-  renderDashboardWidgets();
-};
+(function(){
+const SID='dashboard-v2-style';
+function style(){if(document.getElementById(SID))return;const s=document.createElement('style');s.id=SID;s.textContent='.dashboard-analytics{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(230px,.75fr);gap:13px;margin-bottom:15px}.dashboard-trend,.dashboard-focus{background:var(--surface);border:1px solid var(--line);border-radius:17px;box-shadow:var(--shadow);overflow:hidden}.dashboard-analytics-head{display:flex;justify-content:space-between;gap:10px;padding:15px 17px 7px}.dashboard-analytics-title{font-size:12px;font-weight:800;color:#3d5067}.dashboard-analytics-sub{font-size:9px;color:var(--muted);margin-top:3px}.dashboard-trend-total{font-size:15px;font-weight:800;text-align:right}.dashboard-trend-total small{display:block;font-size:8px;color:var(--muted)}.dashboard-chart{height:118px;padding:2px 12px 10px}.dashboard-chart svg{width:100%;height:100%}.chart-grid{stroke:#edf1f5}.chart-area{fill:var(--primary-soft);opacity:.8}.chart-line{fill:none;stroke:var(--primary);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}.chart-dot{fill:#fff;stroke:var(--primary);stroke-width:2}.dashboard-focus{padding:15px 17px}.dashboard-focus-kicker{font-size:8px;font-weight:800;letter-spacing:.1em;color:#9aa5b3}.dashboard-focus-title{font-size:12px;font-weight:800;margin-top:3px}.dashboard-focus-row{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #f0f2f5}.dashboard-focus-row:last-child{border:0}.dashboard-focus-label{font-size:9px;color:var(--muted)}.dashboard-focus-value{font-size:12px}.dashboard-focus-value.unpaid{color:var(--warning-dark)}.dashboard-focus-value.paid{color:var(--success-dark)}.dashboard-stat-icon{width:28px;height:28px;border-radius:9px;display:inline-flex;align-items:center;justify-content:center;float:right;font-size:13px;font-weight:900}.dashboard-stat-icon.blue{background:var(--primary-soft);color:var(--primary)}.dashboard-stat-icon.slate{background:#f1f4f7;color:#718094}.dashboard-stat-icon.orange{background:var(--warning-soft);color:var(--warning-dark)}.dashboard-stat-icon.green{background:var(--success-soft);color:var(--success-dark)}.stat-card.unpaid-card{background:linear-gradient(135deg,#fff 0%,var(--warning-soft) 150%);border-color:#eadfce}.stat-card.paid-card{background:linear-gradient(135deg,#fff 0%,var(--success-soft) 150%);border-color:#dcebe3}.stat-card.unpaid-card .stat-value{color:var(--warning-dark)}.stat-card.paid-card .stat-value{color:var(--success-dark)}.dashboard-overview .hero{display:none}.dashboard-overview .stats-grid{margin-top:0}@media(max-width:850px){.dashboard-analytics{grid-template-columns:1fr}}@media(max-width:520px){.dashboard-chart{height:105px}}';document.head.appendChild(s)}
+function val(x){return typeof money==='function'?money(x):'Rp'+Number(x||0).toLocaleString('id-ID')}
+function period(){return $('billPeriod')?.value||periodNow()}
+function analytics(){style();const page=$('page-dashboard'),stats=page?.querySelector('.stats-grid');if(!stats)return;let a=$('dashboardAnalytics');if(!a){a=document.createElement('div');a.id='dashboardAnalytics';a.className='dashboard-analytics';stats.parentNode.insertBefore(a,stats);a.innerHTML='<section id="dashboardTrend" class="dashboard-trend"></section><section id="dashboardFocus" class="dashboard-focus"></section>'}const p=period(),b=APP.tagihan.filter(x=>periodKey(x.Period||x.Periode)===p),u=b.filter(x=>x.Status!=='Lunas'),paid=b.filter(x=>x.Status==='Lunas');$('dashboardFocus').innerHTML='<div class="dashboard-focus-kicker">BILLING PULSE</div><div class="dashboard-focus-title">Ringkasan periode</div><div class="dashboard-focus-row"><span class="dashboard-focus-label">Total tagihan</span><strong class="dashboard-focus-value">'+val(b.reduce((s,x)=>s+num(x.Nominal),0))+'</strong></div><div class="dashboard-focus-row"><span class="dashboard-focus-label">Belum dibayar</span><strong class="dashboard-focus-value unpaid">'+val(u.reduce((s,x)=>s+num(x.Nominal),0))+'</strong></div><div class="dashboard-focus-row"><span class="dashboard-focus-label">Sudah dibayar</span><strong class="dashboard-focus-value paid">'+val(paid.reduce((s,x)=>s+num(x.Nominal),0))+'</strong></div>';const pay=APP.pembayaran.filter(x=>periodKey(x.Period||x.Periode)===p&&!/batal/i.test(String(x.Status||'')));const map={};pay.forEach(x=>{const d=new Date(x['Tanggal Bayar']||x['Tanggal Pembayaran']||x.Timestamp||x.Tanggal||'');if(!isNaN(d))map[d.getDate()]=(map[d.getDate()]||0)+num(x.Nominal)});const z=p.split('-').map(Number),days=new Date(z[0],z[1],0).getDate(),pts=Array.from({length:days},(_,i)=>map[i+1]||0),max=Math.max(...pts,1),w=640,h=100,coords=pts.map((v,i)=>[10+(days===1?310:i*620/(days-1)),90-(v/max)*70]),line=coords.map((q,i)=>(i?'L':'M')+q[0].toFixed(1)+' '+q[1].toFixed(1)).join(' '),area=line+' L '+coords[coords.length-1][0]+' 90 L '+coords[0][0]+' 90 Z',total=pts.reduce((x,y)=>x+y,0);$('dashboardTrend').innerHTML='<div class="dashboard-analytics-head"><div><div class="dashboard-analytics-title">Tren pendapatan</div><div class="dashboard-analytics-sub">Pembayaran tercatat · '+esc(p)+'</div></div><div class="dashboard-trend-total">'+val(total)+'<small>Total diterima</small></div></div><div class="dashboard-chart"><svg viewBox="0 0 '+w+' '+h+'" preserveAspectRatio="none"><line class="chart-grid" x1="10" y1="20" x2="630" y2="20"/><line class="chart-grid" x1="10" y1="50" x2="630" y2="50"/><line class="chart-grid" x1="10" y1="90" x2="630" y2="90"/><path class="chart-area" d="'+area+'"/><path class="chart-line" d="'+line+'"/><circle class="chart-dot" cx="'+coords[coords.length-1][0]+'" cy="'+coords[coords.length-1][1]+'" r="3"/></svg></div>';stats.querySelectorAll('.stat-card').forEach((c,i)=>{c.classList.toggle('unpaid-card',i===2);c.classList.toggle('paid-card',i===3);let icon=c.querySelector('.dashboard-stat-icon');if(!icon){icon=document.createElement('span');icon.className='dashboard-stat-icon '+['blue','slate','orange','green'][i];c.insertBefore(icon,c.firstChild)}icon.textContent=['♙','▣','!','✓'][i]})}
+function customers(){const t=$('dashboardCustomers');if(!t)return;const list=APP.pelanggan.slice().sort((a,b)=>Number(b._rowIndex||0)-Number(a._rowIndex||0)).slice(0,5);t.innerHTML=list.length?list.map(c=>{const active=String(c.Status)==='Aktif',p=String(c['Paket Speed']||'').trim(),pl=p&&!/mbps/i.test(p)?p+' Mbps':p||'Paket belum diisi';return '<div class="dashboard-customer-item"><div class="dashboard-customer-avatar">'+esc(initialsOf(c['Nama Pelanggan']))+'</div><div class="dashboard-customer-main"><div class="dashboard-customer-name">'+esc(c['Nama Pelanggan']||c['ID Pelanggan']||'Pelanggan')+'</div><div class="dashboard-customer-meta">'+esc(c['ID Pelanggan']||'-')+' · '+esc(pl)+'</div></div><span class="dashboard-customer-status '+(active?'':'is-inactive')+'">'+(active?'Aktif':'Nonaktif')+'</span></div>'}).join(''):'<div class="dashboard-empty"><strong>Belum ada pelanggan</strong>Data pelanggan akan tampil di sini.</div>'}
+function history(){const t=$('dashboardHistory');if(!t)return;const list=APP.auditLog.slice().sort((a,b)=>String(b.Timestamp).localeCompare(String(a.Timestamp))).slice(0,5);t.innerHTML=list.length?list.map(a=>'<div class="dashboard-audit-item"><div class="dashboard-audit-dot"></div><div class="dashboard-audit-main"><div class="dashboard-audit-title">'+esc(a.Action||'ACTIVITY')+' · '+esc(a.Reference||'')+'</div><div class="dashboard-audit-desc">'+esc(a.Description||'Aktivitas aplikasi')+'</div><div class="dashboard-audit-time">'+esc(a.User||'User')+' · '+dateTimeShort(a.Timestamp)+'</div></div></div>').join(''):'<div class="dashboard-empty"><strong>Belum ada histori</strong>Aktivitas aplikasi akan tampil di sini.</div>'}
+window.renderDashboardWidgets=function(){const l=$('dashboardPeriodLabel');if(l)l.textContent=period()||'periode terpilih';analytics();customers();history()};const ra=window.renderAll,rd=window.renderDashboard;window.renderAll=function(){ra();renderDashboardWidgets()};window.renderDashboard=function(){rd();renderDashboardWidgets()};
+})();
