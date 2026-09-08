@@ -1,0 +1,18 @@
+/* Nusantara WiFi — Refined Professional UI */
+:root{--bg:#f5f7fb;--surface:#fff;--surface-soft:#f8fafc;--text:#26364a;--muted:#7b8798;--line:#e7ebf1;--primary:#6685a8;--primary-dark:#526f90;--primary-soft:#edf3f9;--success:#6f9a86;--success-soft:#edf6f1;--warning:#b58c5a;--warning-soft:#faf4e9;--danger:#a87178;--danger-soft:#faf0f1;--shadow:0 14px 40px rgba(49,68,91,.07);--radius:18px}
+body{background:var(--bg);color:var(--text);font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;-webkit-font-smoothing:antialiased}
+.sidebar{width:250px;background:rgba(255,255,255,.96);border-right:1px solid var(--line);padding:22px 15px;box-shadow:4px 0 22px rgba(50,65,82,.025)}
+.brand{padding:5px 9px 25px}.brand-mark{background:#eef3f8;color:#5f7895;border:1px solid #e1e9f1;box-shadow:none}.brand-title{font-weight:720;color:#34445a}.brand-subtitle{color:#9aa5b3}
+.nav{gap:5px}.nav-item{padding:11px 12px;border-radius:12px;color:#748195}.nav-item span{color:#9aa5b3}.nav-item:hover{background:#f7f9fb;color:#4e6075}.nav-item.active{background:#edf3f9;color:#526f90;box-shadow:inset 3px 0 #9eb2c8}.nav-item.active span{color:#6685a8}
+.sidebar-bottom{padding:13px 10px 4px}.connection{color:#8c97a6}.sidebar-note{color:#a2acb9}
+.main{padding:0 36px 48px}.topbar{height:80px;margin-bottom:30px;border-bottom-color:#e9edf2}.topbar h1{color:#304156;font-weight:720}
+.page{max-width:1280px}.hero{background:#eef3f7;border:1px solid #e1e8ef;border-radius:22px;padding:31px 34px;box-shadow:0 8px 28px rgba(55,73,93,.035)}.hero h2{color:#34475d}.hero h2 span{color:#7188a0}.hero p{color:#7d8999}
+.stats-grid{gap:13px}.stat-card,.quick-card,.panel,.customer-card{border-color:#e5eaf0;box-shadow:0 5px 22px rgba(49,68,91,.028)}.stat-card{padding:19px 20px}.stat-label{color:#9aa5b3}.stat-value{color:#34445a}.stat-foot{color:#a0a9b5}
+.section-head,.page-intro{margin-top:28px}.section-head h3,.page-intro h2{color:#34445a}.page-intro p{color:#8792a1}
+.quick-card{padding:18px}.quick-card:hover{box-shadow:0 12px 30px rgba(49,68,91,.065);border-color:#dce4ec}.quick-icon{background:#f3f6f9;color:#6c86a1}
+.toolbar{margin-bottom:14px}.input{border-color:#e0e6ed;color:#43546a;background:#fff}.input::placeholder{color:#a5aeba}.input:focus{border-color:#b8c8d8;box-shadow:0 0 0 3px #edf3f9}
+.btn{border-radius:10px}.btn-primary{background:#6d88a7;box-shadow:0 4px 12px rgba(88,115,145,.12)}.btn-primary:hover{background:#617e9e}.btn-soft{background:#f2f5f8;color:#6b7889}.btn-white{border-color:#e0e6ec;color:#64768a}
+th{background:#fafbfd;color:#9ba5b2}td{color:#5d6b7d}tbody tr:hover td{background:#fbfcfd}
+.modal-backdrop{background:rgba(42,54,70,.20);backdrop-filter:blur(3px)}.modal-card{border-color:#e5eaf0;box-shadow:0 24px 70px rgba(38,54,74,.13)}.modal-close{background:#f4f6f8;color:#8b96a5}.payment-summary{background:#f7f9fb;border-color:#e7ecf1}
+.toast{background:#40536a;box-shadow:0 10px 30px rgba(30,41,59,.13)}
+@media(max-width:720px){.main{padding:0 15px 30px}.hero{padding:22px;border-radius:18px}.sidebar{width:250px}}
