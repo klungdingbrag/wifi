@@ -7,6 +7,7 @@
   <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="css/ui-loading.css">
   <link rel="stylesheet" href="css/refactor-ui.css">
+  <link rel="stylesheet" href="css/dashboard-pro.css">
 </head>
 
 <body>
@@ -38,13 +39,24 @@
       <div class="top-actions"><button class="btn btn-soft" id="refreshBtn">↻ <span>Refresh</span></button><div class="avatar">NW</div></div>
     </header>
 
-    <section id="page-dashboard" class="page active">
+    <section id="page-dashboard" class="page active dashboard-overview">
       <div class="hero"><div><div class="hero-kicker">NUSANTARA WIFI</div><h2>Kelola pelanggan & tagihan<br><span>dengan lebih tenang.</span></h2><p>Monitor tagihan, catat pembayaran, dan kirim pengingat WhatsApp dari satu tempat.</p></div><div class="hero-actions"><button class="btn btn-primary" id="heroAddCustomer">+ Pelanggan Baru</button><button class="btn btn-white" id="heroGenerate">Buat Tagihan</button></div></div>
       <div class="stats-grid"><div class="stat-card"><div class="stat-label">PELANGGAN AKTIF</div><div class="stat-value" id="statCustomers">0</div><div class="stat-foot">Pelanggan aktif</div></div><div class="stat-card"><div class="stat-label">TAGIHAN BERJALAN</div><div class="stat-value" id="statBills">0</div><div class="stat-foot">Periode terpilih</div></div><div class="stat-card"><div class="stat-label">BELUM BAYAR</div><div class="stat-value" id="statOutstanding">Rp0</div><div class="stat-foot">Outstanding</div></div><div class="stat-card"><div class="stat-label">SUDAH BAYAR</div><div class="stat-value" id="statPaid">Rp0</div><div class="stat-foot">Periode terpilih</div></div></div>
+      <div class="dashboard-period-row"><div class="dashboard-period-label">Ringkasan billing untuk <strong id="dashboardPeriodLabel">periode terpilih</strong></div></div>
       <div class="section-head"><div><div class="panel-kicker">QUICK ACTIONS</div><h3>Operasional</h3></div></div>
       <div class="quick-grid"><button class="quick-card" id="quickCustomer"><span class="quick-icon">＋</span><strong>Tambah pelanggan</strong><small>Daftarkan pelanggan baru</small></button><button class="quick-card" id="quickBill"><span class="quick-icon">▣</span><strong>Buat tagihan</strong><small>Generate tagihan bulanan</small></button><button class="quick-card" id="quickPayment"><span class="quick-icon">✓</span><strong>Catat pembayaran</strong><small>Bayar tagihan pelanggan</small></button></div>
       <div class="section-head"><div><div class="panel-kicker">FOLLOW UP</div><h3>Tagihan perlu ditindaklanjuti</h3></div><button class="btn btn-soft btn-mini" data-page-link="tagihan">Lihat semua</button></div>
       <div class="panel"><div id="dashboardOutstanding"></div></div>
+      <div class="dashboard-section-grid">
+        <section class="dashboard-widget">
+          <div class="dashboard-widget-head"><div class="dashboard-widget-title"><span class="dashboard-widget-icon">◉</span><div><h3>Pelanggan</h3><small>Data pelanggan terbaru</small></div></div><button class="dashboard-widget-link" data-page-link="pelanggan">Lihat semua →</button></div>
+          <div class="dashboard-widget-body"><div id="dashboardCustomers" class="dashboard-customer-list"></div></div>
+        </section>
+        <section class="dashboard-widget">
+          <div class="dashboard-widget-head"><div class="dashboard-widget-title"><span class="dashboard-widget-icon">↺</span><div><h3>Histori aplikasi</h3><small>Aktivitas terbaru</small></div></div><button class="dashboard-widget-link" data-page-link="histori">Lihat semua →</button></div>
+          <div class="dashboard-widget-body"><div id="dashboardHistory" class="dashboard-audit-list"></div></div>
+        </section>
+      </div>
     </section>
 
     <section id="page-tagihan" class="page"><div class="page-intro"><div><div class="panel-kicker">BILLING</div><h2>Tagihan</h2><p>Kelola tagihan pelanggan per periode.</p></div><div class="page-actions"><button class="btn btn-primary" id="newBillBtn">+ Buat tagihan</button></div></div><div class="toolbar"><input id="billSearch" class="input search-input" placeholder="Cari ID, pelanggan..."/><select id="billPeriod" class="input compact-input"></select><select id="billStatus" class="input compact-input"><option value="">Semua status</option><option>Belum Bayar</option><option>Lunas</option></select></div><div class="panel table-panel"><div class="table-scroll"><table><thead><tr><th>PELANGGAN</th><th>PERIODE</th><th>JATUH TEMPO</th><th>NOMINAL</th><th>STATUS</th><th></th></tr></thead><tbody id="billTableBody"></tbody></table></div><div id="billEmpty" class="empty-state hidden"><div class="empty-icon">✓</div><strong>Tidak ada tagihan</strong><span>Tidak ditemukan tagihan sesuai filter.</span></div></div></section>
@@ -65,5 +77,6 @@
 <script src="js/app.js"></script>
 <script src="js/ui-loading.js"></script>
 <script src="js/cancel-payment.js"></script>
+<script src="js/dashboard-widgets.js"></script>
 </body>
 </html>
