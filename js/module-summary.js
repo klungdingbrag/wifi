@@ -1,4 +1,4 @@
-/* Nusantara WiFi — compact module summaries */
+/* Nusantara WiFi — compact module summaries V5 */
 (function(){
   'use strict';
 
@@ -12,6 +12,7 @@
   function periodSafe(v){
     return typeof periodKey==='function'?periodKey(v):String(v||'').slice(0,7)
   }
+  function isCancelled(p){return String(p?.Status||'').trim().toLowerCase()==='dibatalkan'}
 
   function renderModuleSummaries(){
     const active=APP.pelanggan.filter(c=>String(c.Status)==='Aktif');
@@ -20,9 +21,8 @@
     const payments=APP.pembayaran;
     const period=$('billPeriod')?.value||periodNow();
 
-    // Billing summary must follow the same operational scope as the Billing table:
-    // only active customers + the selected period. Historical/inactive invoices
-    // remain in APP.tagihan and can still be preserved for audit/history.
+    // Billing summary follows the operational scope of the Billing table:
+    // active customers + selected period. Historical/inactive invoices stay preserved.
     const periodBills=bills.filter(b=>
       activeIds.has(String(b['ID Pelanggan'])) &&
       periodSafe(b.Period||b.Periode)===period
@@ -34,9 +34,8 @@
     const collectionRate=billedAmount>0?(paidAmount/billedAmount*100):0;
 
     const periodPayments=payments.filter(p=>periodSafe(p.Period||p.Periode)===period);
-    const revenue=periodPayments
-      .filter(p=>String(p.Status||'').toLowerCase()!=='dibatalkan')
-      .reduce((s,p)=>s+numSafe(p.Nominal),0);
+    const validPayments=periodPayments.filter(p=>!isCancelled(p));
+    const revenue=validPayments.reduce((s,p)=>s+numSafe(p.Nominal),0);
 
     const set=(id,items)=>{
       const el=$(id);
@@ -58,9 +57,9 @@
     ]);
 
     set('paymentModuleSummary',[
-      ['Pembayaran periode',periodPayments.length,`Periode ${period}`],
-      ['Penerimaan',moneySafe(revenue),'Transaksi tercatat'],
-      ['Rata-rata transaksi',periodPayments.length?moneySafe(revenue/periodPayments.length):'Rp0','Per transaksi'],
+      ['Pembayaran valid',validPayments.length,`Periode ${period}`],
+      ['Penerimaan',moneySafe(revenue),'Transaksi valid tercatat'],
+      ['Rata-rata transaksi',validPayments.length?moneySafe(revenue/validPayments.length):'Rp0','Tidak termasuk pembatalan'],
       ['Lunas billing',paidBills.length,`Dari ${periodBills.length} tagihan`]
     ]);
 
