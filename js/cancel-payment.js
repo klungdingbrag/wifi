@@ -11,6 +11,7 @@ function paymentButtonUI(state, message) {
 
   if (state === 'saving') {
     btn.disabled = true;
+    btn.dataset.paymentProcessing = '1';
     btn.classList.remove('is-success');
     btn.classList.add('is-saving');
     btn.setAttribute('aria-busy', 'true');
@@ -20,6 +21,7 @@ function paymentButtonUI(state, message) {
 
   if (state === 'success') {
     btn.disabled = true;
+    delete btn.dataset.paymentProcessing;
     btn.classList.remove('is-saving');
     btn.classList.add('is-success');
     btn.removeAttribute('aria-busy');
@@ -28,6 +30,7 @@ function paymentButtonUI(state, message) {
   }
 
   btn.disabled = false;
+  delete btn.dataset.paymentProcessing;
   btn.classList.remove('is-saving', 'is-success');
   btn.removeAttribute('aria-busy');
   btn.textContent = btn.dataset.originalText || 'Simpan pembayaran';
@@ -67,7 +70,7 @@ async function savePayment(e) {
   if (String(b.Status) === 'Lunas') return toast('Tagihan ini sudah lunas.', true);
   if (!b['ID Tagihan']) return toast('ID tagihan tidak tersedia.', true);
   if (!method) return toast('Metode pembayaran wajib dipilih.', true);
-  if (btn?.disabled) return;
+  if (btn?.dataset.paymentProcessing === '1') return;
 
   paymentButtonUI('saving');
 
