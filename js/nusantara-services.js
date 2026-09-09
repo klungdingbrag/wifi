@@ -20,7 +20,7 @@
 
   const state = {
     installed: true,
-    version: '1.0.0',
+    version: '1.1.0',
     requests: 0,
     successes: 0,
     failures: 0,
@@ -116,6 +116,14 @@
       if (typeof window.apiGet !== 'function') throw new Error('WiFi API belum tersedia.');
       return window.apiGet('getInitialData');
     },
+    testConnection: function(){
+      if (typeof window.apiGet !== 'function') throw new Error('WiFi API belum tersedia.');
+      return window.apiGet('testConnection');
+    },
+    auditDatabase: function(){
+      if (typeof window.apiGet !== 'function') throw new Error('WiFi API belum tersedia.');
+      return window.apiGet('auditDatabase');
+    },
     get: function(action, params){
       if (typeof window.apiGet !== 'function') throw new Error('WiFi API belum tersedia.');
       return window.apiGet(action, params || {});
@@ -127,8 +135,8 @@
   });
 
   /* Absensi contract only. It is intentionally not wired to an endpoint yet.
-   * Phase 05 defines the boundary; Phase 04/native Absensi integration can
-   * supply the adapter later without changing consumers of this layer. */
+   * Phase 05 defines the boundary; the future People integration can supply
+   * an adapter later without changing consumers of this layer. */
   services.absensi = Object.freeze({
     status: function(){
       return Promise.resolve({
