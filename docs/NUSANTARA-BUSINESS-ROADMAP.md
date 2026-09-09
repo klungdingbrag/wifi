@@ -18,8 +18,8 @@ Prinsip utama:
 |---|---|---|
 | 01 | Production Foundation | Selesai |
 | 02 | Architecture Audit & Blueprint | Selesai |
-| 03 | Nusantara Business Shell | Berikutnya |
-| 04 | Nusantara Absensi Integration | Rencana |
+| 03 | Nusantara Business Shell | Selesai |
+| 04 | Nusantara Absensi Integration | Berikutnya |
 | 05 | Unified Service Layer | Rencana |
 | 06 | Business Analytics | Rencana |
 | 07 | Security & Access Control | Rencana |
@@ -68,12 +68,15 @@ Membangun shell frontend utama.
 - Module boundary
 - Backward-compatible route untuk module lama
 
-**Status: BERIKUTNYA.**
+**Status: SELESAI.**
+
+People navigation sudah disiapkan sebagai placeholder. Klik **Absensi** atau **Payroll** belum membuka native workspace; keduanya memberi informasi bahwa modul akan tersedia pada fase integrasi berikutnya. **Absensi Legacy** tetap tersedia sebagai aplikasi terpisah.
 
 ## Fase 04 — Nusantara Absensi Integration
 
 Memasukkan Absensi sebagai native module.
 
+- Final audit kontrak API Absensi
 - Absensi workspace
 - Karyawan
 - Payroll
@@ -81,7 +84,7 @@ Memasukkan Absensi sebagai native module.
 - Adapter ke backend Apps Script Absensi
 - Legacy Absensi tetap aman selama migrasi
 
-**Status: RENCANA.**
+**Status: BERIKUTNYA.**
 
 ## Fase 05 — Unified Service Layer
 
