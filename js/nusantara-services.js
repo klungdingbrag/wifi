@@ -20,7 +20,7 @@
 
   const state = {
     installed: true,
-    version: '1.3.0',
+    version: '1.3.1',
     requests: 0,
     successes: 0,
     failures: 0,
@@ -109,7 +109,7 @@
     };
   }
 
-  /* Capture the production transport before any compatibility proxy is installed. */
+  /* Capture the production transport before service adapters are exposed. */
   const legacyApiPost = window.apiPost;
 
   /* WiFi adapter: wraps the existing production API functions.
@@ -161,28 +161,11 @@
     }
   });
 
-  /* Compatibility bridge: migrate only customer writes first.
-   * Existing callers keep receiving the legacy data result, while the
-   * transport and observability now pass through the service layer.
-   * Other writes remain on the original API until their own migration. */
-  if (typeof legacyApiPost === 'function' && !legacyApiPost.__serviceBridge) {
-    const customerActions = new Set(['addCustomer','updateCustomer','deleteCustomer']);
-    const bridgedApiPost = function(action, payload){
-      if (customerActions.has(String(action))) {
-        const operation = action === 'addCustomer' ? 'createCustomer'
-          : action === 'updateCustomer' ? 'updateCustomer' : 'deleteCustomer';
-        return services.wifi[operation](payload || {}).then(result=>result.data);
-      }
-      return legacyApiPost.apply(this, arguments);
-    };
-    bridgedApiPost.__serviceBridge = true;
-    bridgedApiPost.__legacyApiPost = legacyApiPost;
-    window.apiPost = bridgedApiPost;
-  }
+  /* IMPORTANT: do not replace window.apiPost yet.
+   * Existing customer UI code still owns the production transport.
+   * The service adapter remains available for the next migration step,
+   * while the live customer path stays untouched. */
 
-  /* Absensi contract only. It is intentionally not wired to an endpoint yet.
-   * Phase 05 defines the boundary; the future People integration can supply
-   * an adapter later without changing consumers of this layer. */
   services.absensi = Object.freeze({
     status: function(){
       return Promise.resolve({
