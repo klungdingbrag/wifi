@@ -3,6 +3,7 @@
   'use strict';
   const PAGE='absensi';
   function install(){
+    if(typeof window.PAGE_META==='object')window.PAGE_META[PAGE]=['PEOPLE','Absensi'];
     const nav=document.querySelector('.nav');
     if(!nav)return false;
     if(!nav.querySelector('[data-page="absensi"]')){
