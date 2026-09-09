@@ -26,15 +26,20 @@
     wrap.innerHTML='<div class="panel-kicker">MANAGEMENT ANALYTICS</div><div class="analytics-grid" id="analyticsKpis"></div><div class="analytics-panels"><section class="analytics-panel"><div class="analytics-panel-head"><div><div class="analytics-panel-title">Outstanding aging</div><div class="analytics-panel-sub">Tagihan aktif berdasarkan umur keterlambatan.</div></div></div><div id="analyticsAging" class="analytics-bars"></div></section><section class="analytics-panel"><div class="analytics-panel-head"><div><div class="analytics-panel-title">Customer signal</div><div class="analytics-panel-sub">Sinyal pertumbuhan dan kualitas data pelanggan.</div></div></div><div id="analyticsCustomerSignal" class="analytics-list"></div></section></div>';
     anchor.insertAdjacentElement('afterend',wrap)
   }
+  function syncRoadmap(){
+    const page=$id('page-roadmap');if(!page)return;
+    const cards=page.querySelectorAll('.roadmap-card');if(cards.length>=6){cards[3].classList.remove('next');cards[3].classList.add('done');cards[3].querySelector('.roadmap-status').textContent='SELESAI';cards[4].classList.remove('planned');cards[4].classList.add('next');cards[4].querySelector('.roadmap-status').textContent='BERIKUTNYA'}
+    const value=page.querySelector('.roadmap-progress-value'),bar=page.querySelector('.roadmap-progress-bar span'),small=page.querySelector('.roadmap-progress small');if(value)value.textContent='66.7%';if(bar)bar.style.width='66.7%';if(small)small.textContent='4 dari 6 fase utama selesai.';
+    const now=page.querySelector('.roadmap-now strong'),desc=page.querySelector('.roadmap-now span');if(now)now.textContent='Next focus · Analytics & Management';if(desc)desc.textContent='Transaction Center sudah menjadi pusat transaksi. Fokus berikutnya adalah mengubah data billing menjadi insight operasional untuk membantu keputusan harian.';
+  }
   function render(){
-    styles();ensure();const wrap=$id('analyticsWorkspace');if(!wrap)return;
+    styles();ensure();syncRoadmap();const wrap=$id('analyticsWorkspace');if(!wrap)return;
     const p=period(),ids=activeIds(),customers=activeCustomers();
     const bills=(APP.tagihan||[]).filter(b=>ids.has(String(b['ID Pelanggan']))&&pkey(b.Period||b.Periode)===p);
     const unpaid=bills.filter(b=>String(b.Status)!=='Lunas');
     const validPayments=(APP.pembayaran||[]).filter(x=>pkey(x.Period||x.Periode)===p&&!/dibatalkan/i.test(String(x.Status||'')));
     const billed=bills.reduce((s,b)=>s+n(b.Nominal),0),outstanding=unpaid.reduce((s,b)=>s+n(b.Nominal),0),collected=billed-outstanding;
-    const rate=billed?collected/billed*100:0;
-    const today=new Date().toISOString().slice(0,10);
+    const rate=billed?collected/billed*100:0,today=new Date().toISOString().slice(0,10);
     const overdue=unpaid.filter(b=>{const d=String(b['Tanggal Jatuh Tempo']||b['Jatuh Tempo']||b.DueDate||'').slice(0,10);return d&&d<today});
     const kpis=[['Collection rate',rate.toLocaleString('id-ID',{maximumFractionDigits:1})+'%','Nominal '+p],['Outstanding',moneySafe(outstanding),unpaid.length+' tagihan belum bayar'],['Overdue',overdue.length,moneySafe(overdue.reduce((s,b)=>s+n(b.Nominal),0))],['Transaksi valid',validPayments.length,moneySafe(validPayments.reduce((s,x)=>s+n(x.Nominal),0))]];
     $id('analyticsKpis').innerHTML=kpis.map((x,i)=>`<div class="analytics-card ${i===1||i===2?'warning':i===0?'success':''}"><div class="analytics-card-kicker">${esc(x[0])}</div><div class="analytics-card-value">${esc(x[1])}</div><div class="analytics-card-note">${esc(x[2])}</div></div>`).join('');
@@ -42,9 +47,7 @@
     unpaid.forEach(b=>{const d=String(b['Tanggal Jatuh Tempo']||b['Jatuh Tempo']||b.DueDate||'').slice(0,10);let age=0;if(d)age=Math.max(0,Math.floor((new Date(today)-new Date(d))/86400000));const idx=age<=7?0:age<=30?1:2;buckets[idx][1]+=n(b.Nominal)});
     const max=Math.max(...buckets.map(x=>x[1]),1);
     $id('analyticsAging').innerHTML=buckets.map(x=>`<div class="analytics-bar-row"><span>${x[0]}</span><div class="analytics-bar-track"><div class="analytics-bar-fill" style="width:${Math.round(x[1]/max*100)}%"></div></div><strong>${moneySafe(x[1])}</strong></div>`).join('');
-    const totalCustomers=APP.pelanggan.length,filled=customers.filter(c=>String(c['Paket Speed']||'').trim()).length;
-    const recent=customers.filter(c=>String(c['Tanggal Pasang']||'').slice(0,7)===p).length;
-    const avgTariff=customers.length?customers.reduce((s,c)=>s+n(c['Tarif Bulanan']),0)/customers.length:0;
+    const totalCustomers=APP.pelanggan.length,filled=customers.filter(c=>String(c['Paket Speed']||'').trim()).length,recent=customers.filter(c=>String(c['Tanggal Pasang']||'').slice(0,7)===p).length,avgTariff=customers.length?customers.reduce((s,c)=>s+n(c['Tarif Bulanan']),0)/customers.length:0;
     const signals=[['Pelanggan aktif',customers.length],['Data paket terisi',`${filled}/${customers.length||0}`],['Pelanggan baru periode',recent],['Rata-rata tarif',moneySafe(avgTariff)],['Total customer records',totalCustomers]];
     $id('analyticsCustomerSignal').innerHTML=signals.map(x=>`<div class="analytics-list-item"><span>${esc(String(x[0]))}</span><strong>${esc(String(x[1]))}</strong></div>`).join('');
   }
