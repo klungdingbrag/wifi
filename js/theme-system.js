@@ -1,4 +1,4 @@
-/* NUSANTARA WIFI — THEME SYSTEM */
+/* NUSANTARA BUSINESS — THEME SYSTEM */
 (function(){
 'use strict';
 const KEY='nusantara-theme',STYLE_ID='nusantara-theme-system';
@@ -24,6 +24,6 @@ html[data-theme="dark"] .module-kpi{background:var(--ds-surface);border-color:va
 function apply(theme){const t=theme==='dark'?'dark':'light';document.documentElement.dataset.theme=t;try{localStorage.setItem(KEY,t)}catch(e){}const b=document.getElementById('themeToggle');if(b){b.innerHTML=t==='dark'?'☀':'☾';b.title=t==='dark'?'Gunakan Light Mode':'Gunakan Dark Mode';b.setAttribute('aria-label',b.title)}}
 function addToggle(){const actions=document.querySelector('.top-actions');if(!actions)return;let b=document.getElementById('themeToggle');if(!b){b=document.createElement('button');b.id='themeToggle';b.className='theme-toggle';b.type='button';const avatar=document.querySelector('.top-actions .avatar');if(avatar)actions.insertBefore(b,avatar);else actions.appendChild(b)}if(b.dataset.themeBound==='1')return;b.dataset.themeBound='1';b.addEventListener('click',()=>apply(document.documentElement.dataset.theme==='dark'?'light':'dark'))}
 function load(src,id){if(document.getElementById(id))return;const s=document.createElement('script');s.id=id;s.src=src;s.async=false;document.body.appendChild(s)}
-function boot(){injectStyle();let saved='light';try{saved=localStorage.getItem(KEY)||'light'}catch(e){}apply(saved);addToggle();load('js/analytics-workspace.js','analyticsWorkspaceLoader');load('js/management-decision.js','managementDecisionLoader');load('js/reliability-workspace.js','reliabilityWorkspaceLoader');load('js/reliability-resilience.js','reliabilityResilienceLoader');load('js/reliability-hardening.js','reliabilityHardeningLoader');load('js/business-roadmap.js','businessRoadmapLoader')}
+function boot(){injectStyle();let saved='light';try{saved=localStorage.getItem(KEY)||'light'}catch(e){}apply(saved);addToggle();load('js/analytics-workspace.js','analyticsWorkspaceLoader');load('js/management-decision.js','managementDecisionLoader');load('js/reliability-workspace.js','reliabilityWorkspaceLoader');load('js/reliability-resilience.js','reliabilityResilienceLoader');load('js/reliability-hardening.js','reliabilityHardeningLoader');load('js/business-roadmap.js','businessRoadmapLoader');load('js/business-shell.js','businessShellLoader')}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
 })();
