@@ -104,6 +104,14 @@
     },false);
   }
 
+  function validateRefreshPayload(data){
+    const requiredArrays=['pelanggan','tagihan','pembayaran','auditLog'];
+    const missing=requiredArrays.filter(k=>!Array.isArray(data?.[k]));
+    const settingsInvalid=!data?.pengaturan||typeof data.pengaturan!=='object'||Array.isArray(data.pengaturan);
+    if(settingsInvalid)missing.push('pengaturan');
+    if(missing.length)throw new Error('Respons refresh tidak lengkap: '+missing.join(', ')+'. Data sebelumnya dipertahankan.');
+  }
+
   window.loadInitialData=async function(){
     ensureLoadingUI();
     setConnection('loading');
@@ -121,11 +129,12 @@
 
     try{
       const data=await apiGet('getInitialData');
-      APP.pelanggan=Array.isArray(data?.pelanggan)?data.pelanggan:[];
-      APP.tagihan=Array.isArray(data?.tagihan)?data.tagihan:[];
-      APP.pembayaran=Array.isArray(data?.pembayaran)?data.pembayaran:[];
-      APP.auditLog=Array.isArray(data?.auditLog)?data.auditLog:[];
-      APP.pengaturan=data?.pengaturan||{};
+      validateRefreshPayload(data);
+      APP.pelanggan=data.pelanggan;
+      APP.tagihan=data.tagihan;
+      APP.pembayaran=data.pembayaran;
+      APP.auditLog=data.auditLog;
+      APP.pengaturan=data.pengaturan;
       renderAll();
       setConnection('ok');
       window.__nusantaraDataLoaded=true;
