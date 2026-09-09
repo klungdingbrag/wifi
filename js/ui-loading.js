@@ -73,7 +73,6 @@
       }
     };
 
-    /* Jika handler utama memang membuat tombol disabled, ikuti lifecycle-nya. */
     const observer=new MutationObserver(()=>{
       if(!btn.disabled){
         observer.disconnect();
@@ -82,7 +81,6 @@
     });
     observer.observe(btn,{attributes:true,attributeFilter:['disabled']});
 
-    /* Refresh memakai global sync indicator; tombol lain memakai micro-loading. */
     if(document.body.classList.contains('is-syncing')){
       const started=Date.now();
       const poll=()=>{
@@ -97,8 +95,6 @@
   }
 
   function bindButtonLoading(){
-    /* Delegated listener sengaja dipasang setelah handler aplikasi,
-       sehingga tombol sudah menjalankan action utamanya terlebih dahulu. */
     document.addEventListener('click',function(event){
       const btn=event.target.closest('button');
       if(!btn||btn.disabled)return;
@@ -111,6 +107,8 @@
   window.loadInitialData=async function(){
     ensureLoadingUI();
     setConnection('loading');
+    window.__nusantaraLastSyncAttempt=Date.now();
+    window.__nusantaraLastSyncError='';
 
     const firstLoad=!window.__nusantaraDataLoaded;
     if(firstLoad){
@@ -131,10 +129,15 @@
       renderAll();
       setConnection('ok');
       window.__nusantaraDataLoaded=true;
+      window.__nusantaraLastSuccessfulSync=Date.now();
+      window.__nusantaraLastSyncError='';
+      return {success:true,refreshedAt:window.__nusantaraLastSuccessfulSync};
     }catch(e){
       console.error(e);
+      window.__nusantaraLastSyncError=errorMessage(e);
       setConnection('bad');
-      toast('Gagal memuat data: '+errorMessage(e),true);
+      toast('Gagal memuat data: '+window.__nusantaraLastSyncError,true);
+      return {success:false,error:window.__nusantaraLastSyncError};
     }finally{
       document.getElementById('loadingScreen')?.classList.add('hidden');
       document.getElementById('appShell')?.classList.remove('hidden');
