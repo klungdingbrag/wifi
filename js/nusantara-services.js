@@ -20,7 +20,7 @@
 
   const state = {
     installed: true,
-    version: '1.1.0',
+    version: '1.2.0',
     requests: 0,
     successes: 0,
     failures: 0,
@@ -127,6 +127,30 @@
     get: function(action, params){
       if (typeof window.apiGet !== 'function') throw new Error('WiFi API belum tersedia.');
       return window.apiGet(action, params || {});
+    },
+    createCustomer: function(payload){
+      if (typeof window.apiPost !== 'function') throw new Error('WiFi API belum tersedia.');
+      return window.apiPost('addCustomer', payload || {});
+    },
+    updateCustomer: function(payload){
+      if (typeof window.apiPost !== 'function') throw new Error('WiFi API belum tersedia.');
+      return window.apiPost('updateCustomer', payload || {});
+    },
+    deleteCustomer: function(payload){
+      if (typeof window.apiPost !== 'function') throw new Error('WiFi API belum tersedia.');
+      return window.apiPost('deleteCustomer', payload || {});
+    },
+    generateBills: function(payload){
+      if (typeof window.apiPost !== 'function') throw new Error('WiFi API belum tersedia.');
+      return window.apiPost('generateMonthlyBills', payload || {});
+    },
+    payBill: function(payload){
+      if (typeof window.apiPost !== 'function') throw new Error('WiFi API belum tersedia.');
+      return window.apiPost('payBill', payload || {});
+    },
+    cancelPayment: function(payload){
+      if (typeof window.apiPost !== 'function') throw new Error('WiFi API belum tersedia.');
+      return window.apiPost('cancelPayment', payload || {});
     },
     post: function(action, payload){
       if (typeof window.apiPost !== 'function') throw new Error('WiFi API belum tersedia.');
