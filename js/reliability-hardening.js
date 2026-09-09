@@ -46,4 +46,13 @@
 
   install();
   window[KEY].installed=state.installed;
+
+  // Load the unified master roadmap after the existing reliability layer.
+  if(!document.getElementById('businessRoadmapLoader')){
+    const s=document.createElement('script');
+    s.id='businessRoadmapLoader';
+    s.src='js/business-roadmap.js';
+    s.async=false;
+    document.body.appendChild(s);
+  }
 })();
