@@ -25,15 +25,34 @@ Every service operation is responsible for:
 
 The WiFi adapter wraps the existing production `apiGet()` and `apiPost()` functions. It does not change the endpoint, payload, or backend contract.
 
-Available transitional operations:
+Read operations currently exposed:
 
 ```text
 Nusantara.services.wifi.getInitialData()
+Nusantara.services.wifi.testConnection()
+Nusantara.services.wifi.auditDatabase()
+Nusantara.services.wifi.get(action, params)
+```
+
+Semantic write operations are now defined as transitional adapter contracts:
+
+```text
+Nusantara.services.wifi.createCustomer(payload)
+Nusantara.services.wifi.updateCustomer(payload)
+Nusantara.services.wifi.deleteCustomer(payload)
+Nusantara.services.wifi.generateBills(payload)
+Nusantara.services.wifi.payBill(payload)
+Nusantara.services.wifi.cancelPayment(payload)
+```
+
+These semantic write methods currently wrap the existing production `apiPost()` calls but are **not yet used to migrate the UI write paths**. This separation lets the contract be reviewed before changing production behavior.
+
+The generic transitional methods remain available during migration:
+
+```text
 Nusantara.services.wifi.get(action, params)
 Nusantara.services.wifi.post(action, payload)
 ```
-
-Existing application code can continue to use the legacy functions while migration happens incrementally.
 
 ### Absensi
 
@@ -61,7 +80,7 @@ Failures reject with an `Error` carrying `service` and `operation` properties.
 
 The service layer is an adapter, not a second database and not a replacement backend. Existing production functions remain the source of truth during Phase 05.
 
-Do not migrate payment, customer, billing, or database write paths in bulk. Move one operation at a time only after the service contract has been verified against production behavior.
+Move one operation at a time. Read operations are migrated first; write operations require an explicit contract review and regression test before their consumers are changed. Do not migrate payment, customer, billing, or database write paths in bulk.
 
 ## Ownership
 
