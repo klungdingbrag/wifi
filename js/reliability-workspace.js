@@ -40,10 +40,15 @@
   }
   function setBusy(b){const btn=$id('reliabilityCheck');if(!btn)return;btn.disabled=b;btn.textContent=b?'Memeriksa…':'Periksa sistem'}
   async function runCheck(){
-    if(typeof apiGet!=='function')return;
+    const wifi=window.Nusantara?.services?.wifi;
+    if(!wifi?.testConnection||!wifi?.auditDatabase){
+      const foot=$id('reliabilityFoot');if(foot)foot.innerHTML='<strong>Service layer belum siap · </strong>Pemeriksaan tidak dijalankan.';
+      return;
+    }
     setBusy(true);const grid=$id('reliabilityGrid'),foot=$id('reliabilityFoot');
     try{
-      const [connection,audit]=await Promise.all([apiGet('testConnection'),apiGet('auditDatabase')]);
+      const [connectionResult,auditResult]=await Promise.all([wifi.testConnection(),wifi.auditDatabase()]);
+      const connection=connectionResult?.data,audit=auditResult?.data||{};
       const safe=!!audit.safe,state=safe?'ok':'error',label=safe?'SEHAT':'PERLU PERBAIKAN';
       grid.innerHTML=`<div class="reliability-item"><div class="reliability-label">Status sistem</div><div class="reliability-value"><span class="reliability-state ${state}">${label}</span></div><div class="reliability-note">Koneksi backend berhasil diperiksa.</div></div><div class="reliability-item"><div class="reliability-label">Database</div><div class="reliability-value">${escSafe(safe?'Integrity OK':'Integrity issue')}</div><div class="reliability-note">${escSafe(audit.customerCount||0)} pelanggan · ${escSafe(audit.billCount||0)} tagihan · ${escSafe(audit.paymentCount||0)} pembayaran.</div></div><div class="reliability-item"><div class="reliability-label">Audit result</div><div class="reliability-value">${escSafe(audit.collisionCount||0)} collision · ${escSafe(audit.duplicateGroupCount||0)} duplicate</div><div class="reliability-note">${escSafe(connection||'Backend terhubung.')}</div></div>`;
       foot.innerHTML=`<strong>Last check · </strong>${escSafe(new Date().toLocaleString('id-ID',{dateStyle:'medium',timeStyle:'short'}))}. ${safe?'Tidak ditemukan collision pelanggan atau duplicate bill group oleh audit backend.':'Audit menemukan masalah; jangan lakukan perubahan massal sebelum ditinjau.'}`;
