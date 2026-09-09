@@ -2,11 +2,13 @@
  * NUSANTARA WIFI — NON-BLOCKING ACTION LOADING
  * Global refresh/loading + visual feedback untuk tombol.
  * Payment UX tetap ditangani sepenuhnya oleh cancel-payment.js.
+ * Phase 05: initial read now consumes the unified WiFi service.
  * ============================================================ */
 'use strict';
 
 (function(){
   const ACTION_STYLE_ID='button-action-loading-style';
+  const SERVICE_SCRIPT_ID='nusantaraServiceLayerLoader';
 
   function ensureLoadingUI(){
     if(document.getElementById('syncIndicator')) return;
@@ -112,6 +114,41 @@
     if(missing.length)throw new Error('Respons refresh tidak lengkap: '+missing.join(', ')+'. Data sebelumnya dipertahankan.');
   }
 
+  function ensureServiceLayer(){
+    const ready=window.Nusantara?.services?.wifi?.getInitialData;
+    if(typeof ready==='function')return Promise.resolve();
+    const existing=document.getElementById(SERVICE_SCRIPT_ID);
+    if(existing){
+      return new Promise((resolve,reject)=>{
+        const started=Date.now();
+        const poll=()=>{
+          if(typeof window.Nusantara?.services?.wifi?.getInitialData==='function')return resolve();
+          if(Date.now()-started>10000)return reject(new Error('Unified Service Layer belum siap.'));
+          setTimeout(poll,25);
+        };
+        poll();
+      });
+    }
+    const script=document.createElement('script');
+    script.id=SERVICE_SCRIPT_ID;
+    script.src='js/nusantara-services.js';
+    script.async=false;
+    return new Promise((resolve,reject)=>{
+      script.onload=()=>typeof window.Nusantara?.services?.wifi?.getInitialData==='function'
+        ?resolve()
+        :reject(new Error('Unified Service Layer gagal diinisialisasi.'));
+      script.onerror=()=>reject(new Error('Unified Service Layer gagal dimuat.'));
+      document.body.appendChild(script);
+    });
+  }
+
+  async function getInitialDataViaService(){
+    await ensureServiceLayer();
+    const result=await window.Nusantara.services.wifi.getInitialData();
+    if(!result||result.success!==true)throw new Error('Service WiFi mengembalikan respons tidak valid.');
+    return result.data;
+  }
+
   window.loadInitialData=async function(){
     ensureLoadingUI();
     setConnection('loading');
@@ -128,7 +165,7 @@
     }
 
     try{
-      const data=await apiGet('getInitialData');
+      const data=await getInitialDataViaService();
       validateRefreshPayload(data);
       APP.pelanggan=data.pelanggan;
       APP.tagihan=data.tagihan;
