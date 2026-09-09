@@ -18,8 +18,8 @@ Prinsip utama:
 |---|---|---|
 | 01 | Production Foundation | Selesai |
 | 02 | Architecture Audit & Blueprint | Selesai |
-| 03 | Nusantara Business Shell | Berikutnya |
-| 04 | Nusantara Absensi Integration | Rencana |
+| 03 | Nusantara Business Shell | Selesai |
+| 04 | Nusantara Absensi Integration | **Berikutnya** |
 | 05 | Unified Service Layer | Rencana |
 | 06 | Business Analytics | Rencana |
 | 07 | Security & Access Control | Rencana |
@@ -67,21 +67,25 @@ Membangun shell frontend utama.
 - Shared loading dan error state
 - Module boundary
 - Backward-compatible route untuk module lama
+- WiFi diposisikan sebagai production module pertama
+- People navigation disiapkan untuk integrasi native berikutnya
 
-**Status: BERIKUTNYA.**
+**Status: SELESAI.**
 
 ## Fase 04 — Nusantara Absensi Integration
 
 Memasukkan Absensi sebagai native module.
 
+- Audit final kontrak API Absensi
 - Absensi workspace
 - Karyawan
 - Payroll
 - Weekly attendance period
 - Adapter ke backend Apps Script Absensi
 - Legacy Absensi tetap aman selama migrasi
+- Read/write isolation dan error isolation
 
-**Status: RENCANA.**
+**Status: BERIKUTNYA.**
 
 ## Fase 05 — Unified Service Layer
 
