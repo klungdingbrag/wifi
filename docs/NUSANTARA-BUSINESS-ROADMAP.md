@@ -104,7 +104,7 @@ Nusantara.services.absensi.*
 
 Service layer bertanggung jawab terhadap request lifecycle, normalisasi response, error handling, observability ringan, dan batas akses data.
 
-Implementasi Phase 05 saat ini:
+### Milestone yang selesai
 
 - registry `Nusantara.services`
 - adapter WiFi yang membungkus API production existing tanpa mengubah endpoint/payload
@@ -113,6 +113,13 @@ Implementasi Phase 05 saat ini:
 - contextual service errors
 - request success/failure counters
 - dokumentasi contract dan aturan migrasi bertahap
+- WiFi `getInitialData` sudah melalui service layer
+- WiFi `testConnection` dan `auditDatabase` sudah melalui service layer
+- semantic contract untuk customer, billing, dan payment write operations sudah didefinisikan tanpa memindahkan consumer production
+
+### Tahap berikutnya
+
+Migrasi consumer write-path dilakukan **satu operasi pada satu waktu**, dimulai dari operasi dengan risiko paling rendah. Setiap migrasi harus mempertahankan endpoint dan payload backend, kemudian diuji terhadap perilaku production sebelum operasi berikutnya dipindahkan.
 
 Service layer **tidak menjadi database baru** dan tidak menggabungkan backend WiFi dengan Absensi.
 
