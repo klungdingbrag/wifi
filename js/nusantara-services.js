@@ -20,7 +20,7 @@
 
   const state = {
     installed: true,
-    version: '1.2.0',
+    version: '1.3.0',
     requests: 0,
     successes: 0,
     failures: 0,
@@ -78,7 +78,7 @@
   }
 
   function defineModule(name, adapter){
-    if (!name || !adapter || typeof adapter !== 'object') throw new Error('Service module tidak valid.');
+    if (!name || !adapter || typeof adapter!=='object') throw new Error('Service module tidak valid.');
     if (services[name]) return services[name];
 
     const exposed = {};
@@ -109,6 +109,9 @@
     };
   }
 
+  /* Capture the production transport before any compatibility proxy is installed. */
+  const legacyApiPost = window.apiPost;
+
   /* WiFi adapter: wraps the existing production API functions.
    * No endpoint or payload is changed here. */
   defineModule('wifi', {
@@ -129,34 +132,53 @@
       return window.apiGet(action, params || {});
     },
     createCustomer: function(payload){
-      if (typeof window.apiPost !== 'function') throw new Error('WiFi API belum tersedia.');
-      return window.apiPost('addCustomer', payload || {});
+      if (typeof legacyApiPost !== 'function') throw new Error('WiFi API belum tersedia.');
+      return legacyApiPost('addCustomer', payload || {});
     },
     updateCustomer: function(payload){
-      if (typeof window.apiPost !== 'function') throw new Error('WiFi API belum tersedia.');
-      return window.apiPost('updateCustomer', payload || {});
+      if (typeof legacyApiPost !== 'function') throw new Error('WiFi API belum tersedia.');
+      return legacyApiPost('updateCustomer', payload || {});
     },
     deleteCustomer: function(payload){
-      if (typeof window.apiPost !== 'function') throw new Error('WiFi API belum tersedia.');
-      return window.apiPost('deleteCustomer', payload || {});
+      if (typeof legacyApiPost !== 'function') throw new Error('WiFi API belum tersedia.');
+      return legacyApiPost('deleteCustomer', payload || {});
     },
     generateBills: function(payload){
-      if (typeof window.apiPost !== 'function') throw new Error('WiFi API belum tersedia.');
-      return window.apiPost('generateMonthlyBills', payload || {});
+      if (typeof legacyApiPost !== 'function') throw new Error('WiFi API belum tersedia.');
+      return legacyApiPost('generateMonthlyBills', payload || {});
     },
     payBill: function(payload){
-      if (typeof window.apiPost !== 'function') throw new Error('WiFi API belum tersedia.');
-      return window.apiPost('payBill', payload || {});
+      if (typeof legacyApiPost !== 'function') throw new Error('WiFi API belum tersedia.');
+      return legacyApiPost('payBill', payload || {});
     },
     cancelPayment: function(payload){
-      if (typeof window.apiPost !== 'function') throw new Error('WiFi API belum tersedia.');
-      return window.apiPost('cancelPayment', payload || {});
+      if (typeof legacyApiPost !== 'function') throw new Error('WiFi API belum tersedia.');
+      return legacyApiPost('cancelPayment', payload || {});
     },
     post: function(action, payload){
-      if (typeof window.apiPost !== 'function') throw new Error('WiFi API belum tersedia.');
-      return window.apiPost(action, payload || {});
+      if (typeof legacyApiPost !== 'function') throw new Error('WiFi API belum tersedia.');
+      return legacyApiPost(action, payload || {});
     }
   });
+
+  /* Compatibility bridge: migrate only customer writes first.
+   * Existing callers keep receiving the legacy data result, while the
+   * transport and observability now pass through the service layer.
+   * Other writes remain on the original API until their own migration. */
+  if (typeof legacyApiPost === 'function' && !legacyApiPost.__serviceBridge) {
+    const customerActions = new Set(['addCustomer','updateCustomer','deleteCustomer']);
+    const bridgedApiPost = function(action, payload){
+      if (customerActions.has(String(action))) {
+        const operation = action === 'addCustomer' ? 'createCustomer'
+          : action === 'updateCustomer' ? 'updateCustomer' : 'deleteCustomer';
+        return services.wifi[operation](payload || {}).then(result=>result.data);
+      }
+      return legacyApiPost.apply(this, arguments);
+    };
+    bridgedApiPost.__serviceBridge = true;
+    bridgedApiPost.__legacyApiPost = legacyApiPost;
+    window.apiPost = bridgedApiPost;
+  }
 
   /* Absensi contract only. It is intentionally not wired to an endpoint yet.
    * Phase 05 defines the boundary; the future People integration can supply
