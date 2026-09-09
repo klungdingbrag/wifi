@@ -28,20 +28,47 @@
   function status(kind,text){const box=$id('resilienceStatus'),label=$id('resilienceText');if(!box||!label)return;box.className='resilience-status '+(kind||'');label.textContent=text}
   function showError(message){const x=$id('resilienceError');if(!x)return;x.style.display='block';x.innerHTML='<strong>Data belum diperbarui.</strong> '+escSafe(message||'Backend tidak dapat dihubungi. Data yang tampil jangan dianggap sebagai hasil refresh terbaru.')}
   function hideError(){const x=$id('resilienceError');if(x){x.style.display='none';x.textContent=''}}
+  function snapshot(){return {pelanggan:Array.isArray(APP?.pelanggan)?APP.pelanggan.slice():null,tagihan:Array.isArray(APP?.tagihan)?APP.tagihan.slice():null,pembayaran:Array.isArray(APP?.pembayaran)?APP.pembayaran.slice():null,auditLog:Array.isArray(APP?.auditLog)?APP.auditLog.slice():null,pengaturan:APP?.pengaturan&&typeof APP.pengaturan==='object'?{...APP.pengaturan}:null}}
+  function restore(s){if(!s)return;['pelanggan','tagihan','pembayaran','auditLog'].forEach(k=>{if(Array.isArray(s[k]))APP[k]=s[k]});if(s.pengaturan)APP.pengaturan=s.pengaturan;try{if(typeof renderAll==='function')renderAll()}catch(e){console.warn('Resilience render restore failed',e)}}
+  function validateData(){
+    const arrays=['pelanggan','tagihan','pembayaran','auditLog'];
+    const missing=arrays.filter(k=>!Array.isArray(APP?.[k]));
+    const settingsInvalid=!APP?.pengaturan||typeof APP.pengaturan!=='object'||Array.isArray(APP.pengaturan);
+    if(settingsInvalid)missing.push('pengaturan');
+    if(missing.length){state.failed=true;status('error','Struktur data tidak lengkap.');showError('Field data berikut tidak tersedia atau tidak valid: '+missing.join(', '));return false}
+    return true
+  }
+  function installLoadGuard(){
+    const original=window.loadInitialData;
+    if(typeof original!=='function'||original.__resilienceGuard)return;
+    const guarded=async function(){
+      const before=snapshot();
+      try{
+        const result=await original.apply(this,arguments);
+        if(!validateData()){
+          restore(before);
+          throw new Error('Respons refresh tidak memiliki struktur data yang valid. Data sebelumnya dipertahankan.');
+        }
+        return result;
+      }catch(err){
+        if(before?.pelanggan&&before?.tagihan&&before?.pembayaran&&before?.auditLog){
+          restore(before);
+        }
+        throw err;
+      }
+    };
+    guarded.__resilienceGuard=true;
+    guarded.__originalLoadInitialData=original;
+    window.loadInitialData=guarded;
+  }
   async function retry(){
     if(state.loading||typeof window.loadInitialData!=='function')return;
     state.loading=true;const btn=$id('resilienceRetry');if(btn){btn.disabled=true;btn.textContent='Memuat…'};status('warn','Memuat data terbaru…');hideError();
-    try{await window.loadInitialData();state.failed=false;state.lastSuccess=Date.now();status('','Data terbaru berhasil dimuat.');}
-    catch(err){state.failed=true;status('error','Refresh gagal.');showError(err?.message||'Request backend gagal.');}
+    try{await window.loadInitialData();if(!validateData())throw new Error('Data hasil refresh tidak valid.');state.failed=false;state.lastSuccess=Date.now();status('','Data terbaru berhasil dimuat.');}
+    catch(err){state.failed=true;status('error','Refresh gagal.');showError(err?.message||'Request backend gagal. Data sebelumnya dipertahankan bila tersedia.');}
     finally{state.loading=false;if(btn){btn.disabled=false;btn.textContent='Refresh data'}}
   }
-  function validateData(){
-    const required=['pelanggan','tagihan','pembayaran','auditLog','pengaturan'];
-    const missing=required.filter(k=>!Array.isArray(APP[k])&&typeof APP[k]!=='object');
-    if(missing.length){state.failed=true;status('error','Struktur data tidak lengkap.');showError('Field data berikut tidak tersedia: '+missing.join(', '));return false}
-    return true
-  }
-  function init(){styles();ensure();setTimeout(()=>{if(validateData()){state.lastSuccess=Date.now();status('','Data frontend siap digunakan.')}},0)}
+  function init(){styles();ensure();installLoadGuard();setTimeout(()=>{if(validateData()){state.lastSuccess=Date.now();status('','Data frontend siap digunakan')}},0)}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
   window.NusantaraResilience={retry,validateData,getState:()=>({...state})};
 })();
