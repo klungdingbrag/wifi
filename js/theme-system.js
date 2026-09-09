@@ -30,6 +30,7 @@ html[data-theme="dark"] .module-kpi{background:var(--ds-surface);border-color:va
 `;document.head.appendChild(s)}
 function apply(theme){const t=theme==='dark'?'dark':'light';document.documentElement.dataset.theme=t;try{localStorage.setItem(KEY,t)}catch(e){}const b=document.getElementById('themeToggle');if(b){b.textContent=t==='dark'?'☀':'☾';b.title=t==='dark'?'Gunakan Light Mode':'Gunakan Dark Mode';b.setAttribute('aria-label',b.title)}}
 function addToggle(){if(document.getElementById('themeToggle'))return;const actions=document.querySelector('.top-actions');if(!actions)return;const b=document.createElement('button');b.id='themeToggle';b.className='theme-toggle';b.type='button';const avatar=document.querySelector('.top-actions .avatar');if(avatar)actions.insertBefore(b,avatar);else actions.appendChild(b);b.addEventListener('click',()=>apply(document.documentElement.dataset.theme==='dark'?'light':'dark'))}
-function boot(){injectStyle();let saved='light';try{saved=localStorage.getItem(KEY)||'light'}catch(e){}apply(saved);addToggle()}
+function loadAnalytics(){if(document.getElementById('analyticsWorkspaceLoader'))return;const s=document.createElement('script');s.id='analyticsWorkspaceLoader';s.src='js/analytics-workspace.js';s.async=false;document.body.appendChild(s)}
+function boot(){injectStyle();let saved='light';try{saved=localStorage.getItem(KEY)||'light'}catch(e){}apply(saved);addToggle();loadAnalytics()}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
 })();
