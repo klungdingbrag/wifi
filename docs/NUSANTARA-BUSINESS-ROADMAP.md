@@ -19,8 +19,8 @@ Prinsip utama:
 | 01 | Production Foundation | Selesai |
 | 02 | Architecture Audit & Blueprint | Selesai |
 | 03 | Nusantara Business Shell | Selesai |
-| 04 | Nusantara Absensi Integration | **Sedang Dikerjakan** |
-| 05 | Unified Service Layer | Rencana |
+| 04 | Nusantara Absensi Integration | Rencana |
+| 05 | Unified Service Layer | **Sedang Dikerjakan** |
 | 06 | Business Analytics | Rencana |
 | 07 | Security & Access Control | Rencana |
 | 08 | Reliability & Scale | Rencana |
@@ -70,11 +70,11 @@ Membangun shell frontend utama.
 
 **Status: SELESAI.**
 
-People navigation sudah disiapkan sebagai placeholder. Klik **Absensi** atau **Payroll** baru membuka native workspace ketika Fase 04 sudah diaktifkan. **Absensi Legacy** tetap tersedia sebagai aplikasi terpisah selama migrasi.
+People navigation sudah disiapkan sebagai placeholder. Klik **Absensi** atau **Payroll** menampilkan informasi bahwa modul tersebut akan tersedia pada fase integrasi berikutnya. **Absensi Legacy** tetap tersedia sebagai aplikasi terpisah selama migrasi.
 
 ## Fase 04 — Nusantara Absensi Integration
 
-Memasukkan Absensi sebagai native module.
+Memasukkan Absensi sebagai native module ketika fase ini diaktifkan.
 
 - Final audit kontrak API Absensi
 - Absensi workspace
@@ -85,34 +85,38 @@ Memasukkan Absensi sebagai native module.
 - Legacy Absensi tetap aman selama migrasi
 - Verifikasi periode dan perhitungan payroll sebelum native module dianggap selesai
 
-**Status: SEDANG DIKERJAKAN.**
+**Status: RENCANA.**
 
-### Implementasi saat ini
+### Keputusan produk
 
-Native workspace sudah disiapkan pada frontend Nusantara Business sebagai **read-only module**. Data tetap diambil dari Apps Script Absensi yang terpisah; tidak ada fungsi tulis, edit, reset, tambah, atau hapus data Absensi/Payroll dari workspace native.
-
-Tahap verifikasi berikutnya:
-
-1. Validasi periode minggu sebelumnya.
-2. Validasi periode minggu berikutnya.
-3. Validasi refresh dan error handling.
-4. Cross-check angka hadir, lembur, telat, dan total gaji dengan aplikasi Absensi existing.
-5. Regression check module WiFi.
+Native Absensi dan Payroll **belum diaktifkan** pada Phase 05. Sidebar People tetap tersedia sebagai navigasi awal, tetapi klik **Absensi** atau **Payroll** menggunakan placeholder dari Business Shell. Implementasi native akan dimulai saat Phase 04 secara eksplisit dibuka.
 
 ## Fase 05 — Unified Service Layer
 
 Membuat interface frontend yang konsisten terhadap backend yang berbeda.
 
-Contoh kontrak konseptual:
+Contoh kontrak:
 
 ```text
 Nusantara.services.wifi.*
 Nusantara.services.absensi.*
 ```
 
-Service layer bertanggung jawab terhadap request lifecycle, normalisasi response, error handling, dan batas akses data.
+Service layer bertanggung jawab terhadap request lifecycle, normalisasi response, error handling, observability ringan, dan batas akses data.
 
-**Status: RENCANA.**
+Implementasi Phase 05 saat ini:
+
+- registry `Nusantara.services`
+- adapter WiFi yang membungkus API production existing tanpa mengubah endpoint/payload
+- contract Absensi yang sengaja inactive sampai Phase 04 diaktifkan
+- common success envelope
+- contextual service errors
+- request success/failure counters
+- dokumentasi contract dan aturan migrasi bertahap
+
+Service layer **tidak menjadi database baru** dan tidak menggabungkan backend WiFi dengan Absensi.
+
+**Status: SEDANG DIKERJAKAN.**
 
 ## Fase 06 — Business Analytics
 
