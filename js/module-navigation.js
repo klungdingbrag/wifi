@@ -132,6 +132,7 @@
 
   function navigateTo(page,push=true){
     if(!validPages.has(page))page='dashboard';
+    if(typeof PAGE_META!=='undefined'&&!PAGE_META.roadmap)PAGE_META.roadmap=['SYSTEM','Roadmap'];
     if(typeof window.showPage==='function')window.showPage(page);
     document.body.dataset.currentPage=page;
     closeMobileSidebar();
@@ -151,6 +152,7 @@
   }
 
   window.addEventListener('DOMContentLoaded',function(){
+    if(typeof PAGE_META!=='undefined'&&!PAGE_META.roadmap)PAGE_META.roadmap=['SYSTEM','Roadmap'];
     loadThemeSystem();loadModulePolish();installMobileSidebarStyle();installRoadmapStyles();installRoadmapPage();installRoadmapNav();bindNavigation();
     const sidebar=document.getElementById('sidebar'),menu=document.getElementById('mobileMenu');
     if(sidebar&&!document.getElementById('sidebarOverlay')){const overlay=document.createElement('div');overlay.id='sidebarOverlay';overlay.className='sidebar-overlay';overlay.setAttribute('aria-hidden','true');document.body.appendChild(overlay);overlay.addEventListener('click',closeMobileSidebar);}
