@@ -1,15 +1,13 @@
 /* ============================================================
  * NUSANTARA BUSINESS — SHELL CONTROLLER
- * Phase 03: Unified frontend shell.
- * People navigation opens the existing functional Absensi & Payroll
- * application until native People workspace migration is complete.
+ * Phase 03/04: unified frontend shell + native People workspace.
+ * People data remains on the separate production Absensi backend.
  * ============================================================ */
 (function(){
   'use strict';
   const KEY='__nusantaraBusinessShell';
   if(window[KEY]?.installed)return;
-  const state={installed:false,version:'1.1.0'};
-  const ABSENSI_URL='https://klungdingbrag.github.io/absensi/';
+  const state={installed:false,version:'1.2.0'};
 
   function loadCss(){
     if(document.getElementById('businessShellStyle'))return;
@@ -52,19 +50,9 @@
     if(nav.querySelector('[data-business-module="people"]'))return;
     const group=document.createElement('div');
     group.className='nav-group'; group.dataset.businessModule='people';
-    group.innerHTML='<div class="nav-group-label business-nav-label"><span>PEOPLE</span><small>Operational</small></div><button class="nav-item" type="button" data-people-action="attendance"><span>◷</span><b>Absensi</b><span class="nav-external-arrow">↗</span></button><button class="nav-item" type="button" data-people-action="payroll"><span>▤</span><b>Payroll</b><span class="nav-external-arrow">↗</span></button>';
+    group.innerHTML='<div class="nav-group-label business-nav-label"><span>PEOPLE</span><small>Operational</small></div><button class="nav-item" type="button" data-business-placeholder="attendance"><span>◷</span><b>Absensi</b></button><button class="nav-item" type="button" data-business-placeholder="payroll"><span>▤</span><b>Payroll</b></button>';
     const analyticsGroup=Array.from(nav.querySelectorAll('.nav-group')).find(g=>g.querySelector('[data-page="roadmap"]'));
     if(analyticsGroup)nav.insertBefore(group,analyticsGroup); else if(internal)nav.insertBefore(group,internal); else nav.appendChild(group);
-
-    group.querySelectorAll('[data-people-action]').forEach(btn=>{
-      if(btn.dataset.peopleBound==='1')return;
-      btn.dataset.peopleBound='1';
-      btn.addEventListener('click',function(){
-        const action=btn.dataset.peopleAction==='payroll'?'Payroll':'Absensi';
-        window.open(ABSENSI_URL,'_blank','noopener');
-      });
-      btn.title='Buka '+(btn.dataset.peopleAction==='payroll'?'Payroll':'Absensi')+' & Gaji';
-    });
   }
   function installNav(){
     const nav=document.querySelector('.nav'); if(!nav)return;
@@ -97,7 +85,7 @@
     }
     const notice=document.createElement('div');
     notice.className='business-shell-notice'; notice.dataset.businessShellNotice='1';
-    notice.innerHTML='<div class="business-shell-notice-icon">NB</div><div><strong>Unified Business Portal</strong><span>WiFi adalah modul production pertama. Modul People menggunakan aplikasi Absensi & Gaji production dengan backend terpisah.</span></div>';
+    notice.innerHTML='<div class="business-shell-notice-icon">NB</div><div><strong>Unified Business Portal</strong><span>WiFi dan People berjalan dalam satu frontend. Data People tetap menggunakan backend Absensi & Gaji production yang terpisah.</span></div>';
     const stats=dashboard.querySelector('.stats-grid');
     if(stats)dashboard.insertBefore(notice,stats);
   }
