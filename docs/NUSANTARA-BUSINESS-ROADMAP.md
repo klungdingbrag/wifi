@@ -131,12 +131,21 @@ Mengubah data operasional menjadi management insight yang dapat digunakan untuk 
 - Management decision dashboard
 - Billing trend 6 periode
 
+### Milestone tambahan yang sudah diimplementasikan
+
+- Collection performance berdasarkan metode pembayaran
+- Rata-rata nilai transaksi valid
+- Customer continuity antarperiode
+- Customer baru pada periode terpilih
+- Billing continuity signal
+- Identifikasi pelanggan yang tidak muncul kembali pada billing periode berikutnya
+
+Semua insight di atas bersifat **read-only** dan dihitung dari data `APP` yang sudah dimuat frontend. Tidak ada perubahan pada database, payment flow, atau endpoint production.
+
 ### Pengembangan berikutnya
 
 - Validasi trend terhadap data production
 - Penyempurnaan overdue/aging berdasarkan tanggal lokal Indonesia
-- Customer growth dan retention signal
-- Collection performance yang lebih mendalam
 - Management insight lintas module setelah People module tersedia
 - Final analytics QA
 
