@@ -20,8 +20,8 @@ Prinsip utama:
 | 02 | Architecture Audit & Blueprint | Selesai |
 | 03 | Nusantara Business Shell | Selesai |
 | 04 | Nusantara Absensi Integration | Rencana |
-| 05 | Unified Service Layer | **Sedang Dikerjakan** |
-| 06 | Business Analytics | Rencana |
+| 05 | Unified Service Layer | **Selesai** |
+| 06 | Business Analytics | **Sedang Dikerjakan** |
 | 07 | Security & Access Control | Rencana |
 | 08 | Reliability & Scale | Rencana |
 | 09 | Business Expansion | Rencana |
@@ -89,54 +89,58 @@ Memasukkan Absensi sebagai native module ketika fase ini diaktifkan.
 
 ### Keputusan produk
 
-Native Absensi dan Payroll **belum diaktifkan** pada Phase 05. Sidebar People tetap tersedia sebagai navigasi awal, tetapi klik **Absensi** atau **Payroll** menggunakan placeholder dari Business Shell. Implementasi native akan dimulai saat Phase 04 secara eksplisit dibuka.
+Native Absensi dan Payroll **belum diaktifkan**. Sidebar People tetap tersedia sebagai navigasi awal, tetapi klik **Absensi** atau **Payroll** menggunakan placeholder dari Business Shell. Implementasi native akan dimulai saat Phase 04 secara eksplisit dibuka.
 
 ## Fase 05 — Unified Service Layer
 
 Membuat interface frontend yang konsisten terhadap backend yang berbeda.
 
-Contoh kontrak:
-
-```text
-Nusantara.services.wifi.*
-Nusantara.services.absensi.*
-```
-
-Service layer bertanggung jawab terhadap request lifecycle, normalisasi response, error handling, observability ringan, dan batas akses data.
-
-### Milestone yang selesai
+### Milestone selesai
 
 - registry `Nusantara.services`
-- adapter WiFi yang membungkus API production existing tanpa mengubah endpoint/payload
-- contract Absensi yang sengaja inactive sampai Phase 04 diaktifkan
+- adapter WiFi untuk API production existing
+- contract Absensi yang inactive sampai Phase 04
 - common success envelope
 - contextual service errors
 - request success/failure counters
-- dokumentasi contract dan aturan migrasi bertahap
-- WiFi `getInitialData` sudah melalui service layer
-- WiFi `testConnection` dan `auditDatabase` sudah melalui service layer
-- semantic contract untuk customer, billing, dan payment write operations sudah didefinisikan tanpa memindahkan consumer production
+- WiFi `getInitialData`, `testConnection`, dan `auditDatabase`
+- Customer CRUD
+- Generate Billing
+- Payment
+- Payment Cancellation
+- Final functional QA
 
-### Tahap berikutnya
-
-Migrasi consumer write-path dilakukan **satu operasi pada satu waktu**, dimulai dari operasi dengan risiko paling rendah. Setiap migrasi harus mempertahankan endpoint dan payload backend, kemudian diuji terhadap perilaku production sebelum operasi berikutnya dipindahkan.
+Seluruh operasi tersebut telah diuji bertahap pada production frontend tanpa mengubah endpoint atau database backend.
 
 Service layer **tidak menjadi database baru** dan tidak menggabungkan backend WiFi dengan Absensi.
 
-**Status: SEDANG DIKERJAKAN.**
+**Status: SELESAI.**
 
 ## Fase 06 — Business Analytics
 
-Mengubah data lintas module menjadi management insight.
+Mengubah data operasional menjadi management insight yang dapat digunakan untuk keputusan harian.
+
+### Baseline yang sudah tersedia
 
 - Billing KPI
 - Collection KPI
-- Attendance KPI
-- Payroll KPI
-- Cross-module management signal
-- Decision dashboard
+- Revenue vs collection
+- Customer signal
+- Outstanding aging
+- Follow-up priority
+- Management decision dashboard
+- Billing trend 6 periode
 
-**Status: RENCANA.**
+### Pengembangan berikutnya
+
+- Validasi trend terhadap data production
+- Penyempurnaan overdue/aging berdasarkan tanggal lokal Indonesia
+- Customer growth dan retention signal
+- Collection performance yang lebih mendalam
+- Management insight lintas module setelah People module tersedia
+- Final analytics QA
+
+**Status: SEDANG DIKERJAKAN.**
 
 ## Fase 07 — Security & Access Control
 
