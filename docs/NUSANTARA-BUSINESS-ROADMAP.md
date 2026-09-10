@@ -4,13 +4,13 @@
 
 Mengembangkan Nusantara WiFi menjadi **Nusantara Business**, satu unified frontend untuk beberapa business module dengan backend tetap modular dan terpisah.
 
-Prinsip utama:
+## Prinsip
 
 1. **One Frontend** — satu UI, navigation, theme, loading, dan pengalaman pengguna.
-2. **Separate Backends** — backend WiFi dan Absensi tetap memiliki service dan data ownership masing-masing.
-3. **Production First** — perubahan baru tidak boleh merusak sistem production yang sudah stabil.
-4. **Incremental Migration** — migrasi dilakukan bertahap dan aplikasi Absensi lama tetap dapat digunakan selama transisi.
-5. **Clear Boundaries** — module tidak boleh saling mengakses database secara langsung; komunikasi melalui service/adapter.
+2. **Separate Backends** — backend WiFi dan People tetap memiliki service dan data ownership masing-masing.
+3. **Production First** — perubahan baru tidak boleh merusak production yang sudah stabil.
+4. **Incremental Migration** — aplikasi legacy tetap hidup selama transisi.
+5. **Clear Boundaries** — module tidak mengakses database module lain secara langsung.
 
 ## Status roadmap
 
@@ -28,23 +28,18 @@ Prinsip utama:
 
 ## Fase 01 — Production Foundation
 
-Fondasi production Nusantara WiFi.
-
 - Customer workspace
 - Billing workspace
 - Payment dan payment reversal
 - Audit trail
 - Analytics
-- Resilience
-- Reliability
+- Resilience dan reliability
 - Database integrity
 - Duplicate prevention
 
 **Status: SELESAI.**
 
 ## Fase 02 — Architecture Audit & Blueprint
-
-Menentukan bagaimana WiFi dan Absensi menjadi module dalam satu platform tanpa memaksa backend digabung.
 
 - Audit repository WiFi dan Absensi
 - Mapping backend dan API
@@ -58,85 +53,82 @@ Menentukan bagaimana WiFi dan Absensi menjadi module dalam satu platform tanpa m
 
 ## Fase 03 — Nusantara Business Shell
 
-Membangun shell frontend utama.
-
 - Brand Nusantara Business
 - Unified sidebar dan topbar
 - Business module navigation
 - Shared theme
 - Shared loading dan error state
-- Module boundary
-- Backward-compatible route untuk module lama
+- Legacy-compatible navigation
+- People navigation
 
 **Status: SELESAI.**
 
 ## Fase 04 — Nusantara Absensi & Payroll Integration
 
-Phase ini sekarang dibuka. People module masuk ke unified frontend dengan prinsip **read-only first** agar backend Absensi production tetap aman.
+Phase ini telah berpindah dari read-only prototype menjadi **functional operational workspace**. Backend Absensi production tetap terpisah dari backend WiFi.
 
-### Yang sudah diaktifkan
+### Functional milestone
 
 - Native workspace **Absensi Karyawan**
 - Native workspace **Payroll Karyawan**
 - Pemilihan periode mingguan
-- Refresh data dari backend Apps Script Absensi
-- Status sinkronisasi dan error state
-- Ringkasan jumlah karyawan, hadir, lembur, dan keterlambatan
-- Rekap payroll mingguan
-- Perhitungan payroll mengikuti formula aplikasi Absensi existing
-- Backend Absensi tetap terpisah dari backend WiFi
-- Legacy Absensi tetap dapat digunakan sebagai aplikasi terpisah
+- Minggu sebelumnya / berikutnya / minggu ini
+- Load data production Absensi
+- Tambah karyawan
+- Edit nama dan gaji harian
+- Hapus karyawan dengan PIN Admin
+- Pencegahan penghapusan karyawan terakhir
+- Input Hadir
+- Input ½ Hari
+- Input jam lembur
+- Input jam telat
+- Input Bonus
+- Input Kasbon
+- Auto-save
+- Simpan manual
+- Reset minggu dengan PIN Admin
+- Backup lokal sebelum/selama penyimpanan
+- Verifikasi hasil penyimpanan terhadap cloud
+- Payroll otomatis dari absensi
+- Slip gaji
+- Dark mode dan responsive workspace
+- Legacy Absensi tetap dapat digunakan selama migrasi
 
-### Kontrak read-only
-
-Business Portal **tidak** melakukan tambah, edit, hapus, reset, atau save attendance/payroll. Semua data People dibaca dari endpoint GET backend Absensi. Ini menjaga database People tetap menjadi source of truth tunggal.
-
-### Formula payroll existing
+### Formula payroll
 
 - Gaji pokok = hari hadir × gaji/hari
 - Lembur = jam lembur × Rp20.000
 - Potongan telat = jam telat × Rp10.000
 - Total = pokok + lembur − potongan telat + bonus − kasbon
 
-### Tahap lanjutan Phase 04
+### Service boundary
 
-- Validasi data periode mingguan terhadap production
-- Detail attendance per hari
-- Detail employee/payroll drill-down
-- Verifikasi hasil payroll terhadap aplikasi Absensi lama
-- Final QA sebelum native People dianggap stabil
-- Setelah stabil, baru evaluasi kebutuhan write access dan security model
+Unified Service Layer sekarang memiliki adapter `absensi` untuk operasi status, pembacaan minggu, dan penyimpanan minggu. Backend People tetap memakai Apps Script yang terpisah.
 
-**Status: SEDANG DIKERJAKAN.**
+### QA gate
+
+Checklist QA tersedia di `docs/PEOPLE-MODULE-QA.md`.
+
+Phase 04 baru dianggap **SELESAI** setelah functional test production oleh pengguna menyatakan input, edit, delete, save, reset, payroll, slip, dan perpindahan minggu berjalan normal.
+
+**Status: SEDANG DIKERJAKAN — FUNCTIONAL BUILD READY FOR QA.**
 
 ## Fase 05 — Unified Service Layer
 
-Membuat interface frontend yang konsisten terhadap backend yang berbeda.
-
-### Milestone selesai
-
-- registry `Nusantara.services`
-- adapter WiFi untuk API production existing
-- contract Absensi yang inactive sampai Phase 04
-- common success envelope
-- contextual service errors
-- request success/failure counters
-- WiFi `getInitialData`, `testConnection`, dan `auditDatabase`
-- Customer CRUD
-- Generate Billing
-- Payment
-- Payment Cancellation
-- Final functional QA
-
-Service layer **tidak menjadi database baru** dan tidak menggabungkan backend WiFi dengan Absensi.
+- Registry `Nusantara.services`
+- Adapter WiFi
+- Common success envelope
+- Contextual service errors
+- Request success/failure counters
+- WiFi read/write contracts
+- Absensi status/get/save adapter
+- Backend tetap terpisah
 
 **Status: SELESAI.**
 
 ## Fase 06 — Business Analytics
 
-Mengubah data operasional menjadi management insight yang dapat digunakan untuk keputusan harian.
-
-### Baseline yang sudah tersedia
+### Baseline
 
 - Billing KPI
 - Collection KPI
@@ -146,30 +138,19 @@ Mengubah data operasional menjadi management insight yang dapat digunakan untuk 
 - Follow-up priority
 - Management decision dashboard
 - Billing trend 6 periode
+- Collection performance
+- Customer continuity
 
-### Milestone tambahan yang sudah diimplementasikan
+### Berikutnya
 
-- Collection performance berdasarkan metode pembayaran
-- Rata-rata nilai transaksi valid
-- Customer continuity antarperiode
-- Customer baru pada periode terpilih
-- Billing continuity signal
-- Identifikasi pelanggan yang tidak muncul kembali pada billing periode berikutnya
-
-Semua insight di atas bersifat **read-only** dan dihitung dari data `APP` yang sudah dimuat frontend. Tidak ada perubahan pada database, payment flow, atau endpoint production.
-
-### Pengembangan berikutnya
-
-- Validasi trend terhadap data production
+- Validasi trend terhadap production
 - Penyempurnaan overdue/aging berdasarkan tanggal lokal Indonesia
-- Management insight lintas module setelah People module tersedia
+- People cross-module insight: headcount, attendance, payroll, dan operational signal
 - Final analytics QA
 
 **Status: SEDANG DIKERJAKAN.**
 
 ## Fase 07 — Security & Access Control
-
-Membangun satu identity layer untuk pengguna platform.
 
 - Authentication
 - Role
@@ -177,12 +158,11 @@ Membangun satu identity layer untuk pengguna platform.
 - Session management
 - Access audit
 - Module-level authorization
+- Pengamanan operasi write People di backend
 
 **Status: RENCANA.**
 
 ## Fase 08 — Reliability & Scale
-
-Mempersiapkan platform untuk pertumbuhan volume data dan module.
 
 - Concurrency hardening
 - Performance
@@ -194,8 +174,6 @@ Mempersiapkan platform untuk pertumbuhan volume data dan module.
 **Status: RENCANA.**
 
 ## Fase 09 — Business Expansion
-
-Menambahkan module bisnis sesuai kebutuhan operasional TB Nusantara.
 
 - Inventory
 - Purchasing
@@ -221,17 +199,17 @@ Menambahkan module bisnis sesuai kebutuhan operasional TB Nusantara.
        Google Sheets                      Google Sheets
 ```
 
-Frontend tidak boleh mengasumsikan bahwa semua module memakai backend yang sama.
+Frontend tidak boleh mengasumsikan semua module memakai backend yang sama.
 
 ## Migration rule
 
-- `main` tetap menjadi stable production branch.
+- `main` tetap stable production.
 - Development dilakukan melalui branch terpisah.
-- Backend production tidak diubah kecuali memang dibutuhkan oleh contract module.
-- Database WiFi dan Absensi tidak digabung pada tahap awal.
+- Backend production tidak diubah kecuali dibutuhkan contract module.
+- Database WiFi dan People tidak digabung.
 - Absensi legacy tetap hidup sampai native module terbukti stabil.
-- Setiap fase harus dapat diuji secara terisolasi sebelum digabungkan ke production.
+- Setiap fase diuji secara terisolasi sebelum production.
 
 ## Definition of success
 
-Nusantara Business dianggap berhasil pada tahap awal apabila pengguna dapat membuka satu frontend dan berpindah antara WiFi dan People tanpa merasa berpindah aplikasi, sementara masing-masing backend tetap berjalan independen dan aman.
+Nusantara Business berhasil pada tahap awal apabila pengguna dapat membuka satu frontend dan berpindah antara WiFi dan People tanpa merasa berpindah aplikasi, sementara backend masing-masing tetap independen, data ownership jelas, dan operasi production tetap aman.
