@@ -103,4 +103,67 @@ function openCustomerModal(row=null){$('customerForm').reset();$('customerRowInd
 function openEditCustomer(row){openCustomerModal(row);}
 function saveCustomer(e){e.preventDefault();const data={rowIndex:Number($('customerRowIndex').value)||null,nama:$('fNama').value.trim(),noWhatsApp:$('fWhatsApp').value.trim(),paketSpeed:$('fPaket').value.trim(),tarifBulanan:Number($('fTarif').value||0),tanggalPasang:$('fTanggal').value,status:$('fStatus').value,alamat:$('fAlamat').value.trim(),catatan:$('fCatatan').value.trim()};if(!data.nama)return toast('Nama pelanggan wajib diisi.',true);if(!data.noWhatsApp)return toast('Nomor WhatsApp wajib diisi.',true);if(data.tarifBulanan<0)return toast('Tarif bulanan tidak valid.',true);const btn=$('customerSaveBtn');btn.disabled=true;apiPost(data.rowIndex?'updateCustomer':'addCustomer',data).then(r=>{toast(r?.message||'Data pelanggan tersimpan.');closeModal('customerModal');loadInitialData();}).catch(err=>toast(errorMessage(err),true)).finally(()=>btn.disabled=false);}
 function deleteCurrentCustomer(){const row=Number($('customerRowIndex').value),c=findCustomerByRow(row);if(!c)return;if(!confirm('Hapus '+(c['Nama Pelanggan']||'pelanggan ini')+'?\n\nHistori tagihan dan pembayaran tetap disimpan.'))return;const btn=$('deleteCustomerBtn');btn.disabled=true;apiPost('deleteCustomer',{rowIndex:row}).then(r=>{toast(r?.message||'Pelanggan berhasil dihapus.');closeModal('customerModal');loadInitialData();}).catch(err=>toast(errorMessage(err),true)).finally(()=>btn.disabled=false);}
-function openCustomerDetail(row){const c=findCustomerByRow(row);if(!c)return;const bills=APP.tagihan.filter(b=>String(b['ID Pelanggan'])===String(c['ID Pelanggan'])).sort((a,b)=>periodKey(b.Period).localeCompare(periodKey(a.Period)));const payments=APP.pembayaran.filter(p=>String(p['ID Pelanggan'])===String(c['ID Pelanggan'])).sort((a,b)=>String(b['Tanggal Bayar']).localeCompare(String(a['Tanggal Bayar'])));$('detailName').textContent=c['Nama Pelanggan']||'Detail Pelanggan';$('detailContent').innerHTML=`<div class="detail-hero"><div class="detail-avatar">${esc(initialsOf(c['Nama Pelanggan']))}</div><div><div class="detail-name">${esc(c['Nama Pelanggan'])}</div><div class="detail-sub">${esc(c['ID Pelanggan'])} · ${esc(c.Status)}</div></div><div class="detail-actions"><button class="btn btn-success btn-mini" onclick="sendCustomerWA(${Number(c._rowIndex)})">WhatsApp</button><button class="btn btn-soft btn-mini" onclick="closeModal('detailModal');openEditCustomer(${Number(c._rowIndex)})">Edit</button></div></div><div class="detail-section"><h4>Informasi pelanggan</h4><div class="detail-grid"><div class="detail-box"><span>WhatsApp</span><strong>${esc(c['No WhatsApp']||'-')}</strong></div><div class="detail-box"><span>Paket</span><strong>${esc(c['Paket Speed']||'-')}</strong></div><div class="detail-box"><span>Tarif bulanan</span><strong>${money(c['Tarif Bulanan'])}</strong></div><div class="detail-box"><span>Tanggal pasang</span><strong>${dateShort(c['Tanggal Pasang'])}</strong></div><div class="detail-box"><span>Alamat</span><strong>${esc(c.Alamat||'-')}</strong></div><div class="detail-box"><span>Catatan</span><strong>${esc(c.Catatan||'-')}</strong></div></div></div><div class="detail-section"><h4>Riwayat tagihan</h4>${bills.length?bills.slice(0,12).map(b=>`... (rest of existing app.js remains unchanged)`: '<div class="empty-state"><span>Belum ada riwayat tagihan.</span></div>'}</div>`;$('detailModal').classList.remove('hidden');}
+function openCustomerDetail(row){const c=findCustomerByRow(row);if(!c)return;const bills=APP.tagihan.filter(b=>String(b['ID Pelanggan'])===String(c['ID Pelanggan'])).sort((a,b)=>periodKey(b.Period).localeCompare(periodKey(a.Period)));const payments=APP.pembayaran.filter(p=>String(p['ID Pelanggan'])===String(c['ID Pelanggan'])).sort((a,b)=>String(b['Tanggal Bayar']).localeCompare(String(a['Tanggal Bayar'])));$('detailName').textContent=c['Nama Pelanggan']||'Detail Pelanggan';$('detailContent').innerHTML=`<div class="detail-hero"><div class="detail-avatar">${esc(initialsOf(c['Nama Pelanggan']))}</div><div><div class="detail-name">${esc(c['Nama Pelanggan'])}</div><div class="detail-sub">${esc(c['ID Pelanggan'])} · ${esc(c.Status)}</div></div><div class="detail-actions"><button class="btn btn-success btn-mini" onclick="sendCustomerWA(${Number(c._rowIndex)})">WhatsApp</button><button class="btn btn-soft btn-mini" onclick="closeModal('detailModal');openEditCustomer(${Number(c._rowIndex)})">Edit</button></div></div><div class="detail-section"><h4>Informasi pelanggan</h4><div class="detail-grid"><div class="detail-box"><span>WhatsApp</span><strong>${esc(c['No WhatsApp']||'-')}</strong></div><div class="detail-box"><span>Paket</span><strong>${esc(c['Paket Speed']||'-')}</strong></div><div class="detail-box"><span>Tarif bulanan</span><strong>${money(c['Tarif Bulanan'])}</strong></div><div class="detail-box"><span>Tanggal pasang</span><strong>${dateShort(c['Tanggal Pasang'])}</strong></div><div class="detail-box"><span>Alamat</span><strong>${esc(c.Alamat||'-')}</strong></div><div class="detail-box"><span>Catatan</span><strong>${esc(c.Catatan||'-')}</strong></div></div></div><div class="detail-section"><h4>Riwayat tagihan</h4>${bills.length?bills.slice(0,12).map(b=>`<div class="detail-bill"><div class="detail-bill-main"><strong>${esc(periodKey(b.Period))} · ${money(b.Nominal)}</strong><span>${esc(b['ID Tagihan'])} · jatuh tempo ${dateShort(b['Jatuh Tempo'])}</span></div><span class="badge ${b.Status==='Lunas'?'badge-paid':'badge-unpaid'}">${esc(b.Status)}</span></div>`).join(''):'<div class="muted-text">Belum ada histori tagihan.</div>'}</div><div class="detail-section"><h4>Riwayat pembayaran</h4>${payments.length?payments.slice(0,12).map(p=>`<div class="detail-bill"><div class="detail-bill-main"><strong>${money(p.Nominal)} · ${esc(p.Metode)}</strong><span>${esc(periodKey(p.Period))} · ${dateShort(p['Tanggal Bayar'])}</span></div></div>`).join(''):'<div class="muted-text">Belum ada pembayaran.</div>'}</div>`;$('detailModal').classList.remove('hidden');}
+function openPaymentModal(row){const b=findBillByRow(row);if(!b)return;$('paymentRowIndex').value=b._rowIndex;$('paymentMethod').value='Tunai';$('paymentNote').value='';$('paymentSummary').innerHTML=`<strong>${esc(b.Nama||findCustomer(b['ID Pelanggan'])?.['Nama Pelanggan']||b['ID Pelanggan'])}</strong><span>${esc(b['ID Tagihan'])} · ${esc(periodKey(b.Period))} · ${money(b.Nominal)}</span>`;$('paymentModal').classList.remove('hidden');}
+function savePayment(e){e.preventDefault();const btn=$('paymentSaveBtn'),row=Number($('paymentRowIndex').value),method=$('paymentMethod').value,note=$('paymentNote').value.trim();btn.disabled=true;apiPost('payBill',{rowIndex:row,method,note}).then(r=>{toast(r?.message||'Pembayaran berhasil dicatat.');closeModal('paymentModal');loadInitialData();}).catch(err=>toast(errorMessage(err),true)).finally(()=>btn.disabled=false);}
+function openGenerateModal(){$('generatePeriod').value=$('billPeriod').value||periodNow();$('generateModal').classList.remove('hidden');}
+function generateBills(){const period=$('generatePeriod').value;if(!period)return toast('Pilih periode terlebih dahulu.',true);const btn=$('confirmGenerate');btn.disabled=true;apiPost('generateMonthlyBills',{requestedPeriod:period}).then(r=>{toast(r?.message||'Tagihan berhasil dibuat.');$('billPeriod').value=period;closeModal('generateModal');loadInitialData();}).catch(err=>toast(errorMessage(err),true)).finally(()=>btn.disabled=false);}
+function normalizeWA(phone){let v=String(phone||'').replace(/\D/g,'');if(v.startsWith('0'))v='62'+v.slice(1);else if(v.startsWith('8'))v='62'+v;return v;}
+
+function buildBillMessage(b,c){
+  const biz=APP.pengaturan.NAMA_BISNIS||'Nusantara WiFi';
+  const manager=APP.pengaturan.NAMA_PENGELOLA||'';
+  const name=c?.['Nama Pelanggan']||b.Nama||'Pelanggan';
+  const packageName=c?.['Paket Speed']||b['Paket Speed']||'-';
+  const packageLabel=packageName&&packageName!=='-'&&!/\bmbps\b/i.test(String(packageName))?String(packageName)+' Mbps':String(packageName||'-');
+  const lines=[
+    `Halo *${name}* 👋`,
+    '',
+    `Salam dari *${biz}${manager?' - '+manager:''}*.`,
+    '',
+    '📋 *DETAIL TAGIHAN*',
+    `🧾 ID Tagihan: *${b['ID Tagihan']||'-'}*`,
+  ];
+  const period=periodKey(b.Period??b.Periode);
+  if(period)lines.push(`📅 Periode: *${period}*`);
+  lines.push(
+    `📦 Paket: *${packageLabel}*`,
+    `💰 Nominal: *${money(b.Nominal)}*`,
+    `📅 Jatuh Tempo: *${dateShort(b['Jatuh Tempo'])}*`,
+    `📌 Status: *${b.Status||'-'}*`,
+    '',
+    '💳 *PEMBAYARAN*'
+  );
+  if(APP.pengaturan.BANK&&APP.pengaturan.NO_REKENING)lines.push(`🏦 ${APP.pengaturan.BANK}: *${APP.pengaturan.NO_REKENING}*`);
+  if(APP.pengaturan.E_WALLET)lines.push(`📱 E-Wallet: *${APP.pengaturan.E_WALLET}*`);
+  lines.push(
+    '',
+    'Mohon melakukan pembayaran sebelum jatuh tempo.',
+    '',
+    'Setelah pembayaran, silakan lakukan konfirmasi.',
+    '',
+    'Terima kasih 🙏',
+    '*Nusantara WiFi*',
+    '_Pengiriman cepat, harga bersahabat_'
+  );
+  return lines.join('\n');
+}
+function sendCustomerWA(row){const c=findCustomerByRow(row);if(!c)return;const phone=normalizeWA(c['No WhatsApp']);if(!phone)return toast('Nomor WhatsApp pelanggan belum tersedia.',true);const p=$('billPeriod')?.value||periodNow();let b=APP.tagihan.find(x=>String(x['ID Pelanggan'])===String(c['ID Pelanggan'])&&periodKey(x.Period)===p);if(!b)b=APP.tagihan.filter(x=>String(x['ID Pelanggan'])===String(c['ID Pelanggan'])).sort((a,b)=>periodKey(b.Period).localeCompare(periodKey(a.Period)))[0];if(!b)return sendWA(phone,`Halo ${c['Nama Pelanggan']},\n\nSalam dari ${APP.pengaturan.NAMA_BISNIS||'Nusantara WiFi'}.\n\nTagihan Anda belum tersedia di sistem.`);sendWA(phone,buildBillMessage(b,c));}
+function sendBillWA(row){const b=findBillByRow(row);if(!b)return;const c=findCustomer(b['ID Pelanggan']);if(!c)return toast('Data pelanggan untuk tagihan ini tidak ditemukan.',true);const phone=normalizeWA(c['No WhatsApp']);if(!phone)return toast('Nomor WhatsApp pelanggan belum tersedia.',true);sendWA(phone,buildBillMessage(b,c));}
+function sendWA(phone,msg){window.open('https://wa.me/'+phone+'?text='+encodeURIComponent(msg||''),'_blank','noopener');}
+function renderPayments(){const list=APP.pembayaran.slice().sort((a,b)=>String(b['Tanggal Bayar']).localeCompare(String(a['Tanggal Bayar'])));$('paymentEmpty')?.classList.toggle('hidden',list.length>0);$('paymentTableBody').innerHTML=list.map(p=>`<tr><td><span class="primary-text">${esc(p['ID Pembayaran'])}</span></td><td><div class="primary-text">${esc(p['Nama Pelanggan']||findCustomer(p['ID Pelanggan'])?.['Nama Pelanggan']||'-')}</div><div class="muted-text">${esc(p['ID Pelanggan'])}</div></td><td>${esc(periodKey(p.Period))}</td><td class="money">${money(p.Nominal)}</td><td>${dateShort(p['Tanggal Bayar'])}</td><td>${esc(p.Metode||'-')}</td></tr>`).join('');}
+function renderAudit(){const list=APP.auditLog.slice().sort((a,b)=>String(b.Timestamp).localeCompare(String(a.Timestamp)));$('auditEmpty')?.classList.toggle('hidden',list.length>0);$('auditList').innerHTML=list.slice(0,100).map(a=>`<div class="audit-item"><div class="audit-dot"></div><div class="audit-main"><div class="audit-title">${esc(a.Action||'ACTIVITY')} · ${esc(a.Reference||'')}</div><div class="audit-desc">${esc(a.Description||'')}</div><div class="audit-time">${esc(a.User||'User')} · ${dateTimeShort(a.Timestamp)}</div></div></div>`).join('');}
+function dateShort(v){if(!v)return '-';const d=new Date(String(v).replace(' ','T'));if(isNaN(d.getTime()))return String(v).substring(0,10);return d.toLocaleDateString('id-ID',{day:'2-digit',month:'short',year:'numeric'});}
+function dateTimeShort(v){if(!v)return '-';const d=new Date(String(v).replace(' ','T'));if(isNaN(d.getTime()))return String(v);return d.toLocaleString('id-ID',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});}
+function dateInput(v){return v?String(v).substring(0,10):'';}
+function todayInput(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+function initialsOf(n){const w=String(n||'?').trim().split(/\s+/).filter(Boolean);return w.length?(w[0][0]+(w.length>1?w[w.length-1][0]:'')).toUpperCase():'?';}
+function shortText(v,max){const s=String(v||'');return s.length>max?s.substring(0,max-1)+'…':s;}
+function num(v){const n=Number(v);return Number.isFinite(n)?n:0;}
+function money(v){return 'Rp'+Math.round(num(v)).toLocaleString('id-ID');}
+function esc(v){return String(v??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\"/g,'&quot;').replace(/'/g,'&#039;');}
+function errorMessage(e){return String(e?.message||e||'Terjadi kesalahan.');}
+function closeModal(id){$(id)?.classList.add('hidden');}
+function setConnection(state){const dot=$('connectionDot'),text=$('connectionText');if(!dot||!text)return;dot.classList.remove('ok','bad');if(state==='ok'){dot.classList.add('ok');text.textContent='Terhubung';}else if(state==='bad'){dot.classList.add('bad');text.textContent='Koneksi bermasalah';}else{text.textContent='Memuat data...';}}
+function toast(message,error=false){const el=$('toast');if(!el)return;el.textContent=message;el.classList.toggle('error',!!error);el.classList.add('show');clearTimeout(window.__toastTimer);window.__toastTimer=setTimeout(()=>el.classList.remove('show'),3500);}
+function showFatalError(message){toast(message,true);}
