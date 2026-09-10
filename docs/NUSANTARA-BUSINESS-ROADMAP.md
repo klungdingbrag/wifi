@@ -19,7 +19,7 @@ Prinsip utama:
 | 01 | Production Foundation | Selesai |
 | 02 | Architecture Audit & Blueprint | Selesai |
 | 03 | Nusantara Business Shell | Selesai |
-| 04 | Nusantara Absensi Integration | Rencana |
+| 04 | Nusantara Absensi & Payroll Integration | **Sedang Dikerjakan** |
 | 05 | Unified Service Layer | **Selesai** |
 | 06 | Business Analytics | **Sedang Dikerjakan** |
 | 07 | Security & Access Control | Rencana |
@@ -70,26 +70,44 @@ Membangun shell frontend utama.
 
 **Status: SELESAI.**
 
-People navigation sudah disiapkan sebagai placeholder. Klik **Absensi** atau **Payroll** menampilkan informasi bahwa modul tersebut akan tersedia pada fase integrasi berikutnya. **Absensi Legacy** tetap tersedia sebagai aplikasi terpisah selama migrasi.
+## Fase 04 — Nusantara Absensi & Payroll Integration
 
-## Fase 04 — Nusantara Absensi Integration
+Phase ini sekarang dibuka. People module masuk ke unified frontend dengan prinsip **read-only first** agar backend Absensi production tetap aman.
 
-Memasukkan Absensi sebagai native module ketika fase ini diaktifkan.
+### Yang sudah diaktifkan
 
-- Final audit kontrak API Absensi
-- Absensi workspace
-- Karyawan
-- Payroll
-- Weekly attendance period
-- Adapter read-only ke backend Apps Script Absensi
-- Legacy Absensi tetap aman selama migrasi
-- Verifikasi periode dan perhitungan payroll sebelum native module dianggap selesai
+- Native workspace **Absensi Karyawan**
+- Native workspace **Payroll Karyawan**
+- Pemilihan periode mingguan
+- Refresh data dari backend Apps Script Absensi
+- Status sinkronisasi dan error state
+- Ringkasan jumlah karyawan, hadir, lembur, dan keterlambatan
+- Rekap payroll mingguan
+- Perhitungan payroll mengikuti formula aplikasi Absensi existing
+- Backend Absensi tetap terpisah dari backend WiFi
+- Legacy Absensi tetap dapat digunakan sebagai aplikasi terpisah
 
-**Status: RENCANA.**
+### Kontrak read-only
 
-### Keputusan produk
+Business Portal **tidak** melakukan tambah, edit, hapus, reset, atau save attendance/payroll. Semua data People dibaca dari endpoint GET backend Absensi. Ini menjaga database People tetap menjadi source of truth tunggal.
 
-Native Absensi dan Payroll **belum diaktifkan**. Sidebar People tetap tersedia sebagai navigasi awal, tetapi klik **Absensi** atau **Payroll** menggunakan placeholder dari Business Shell. Implementasi native akan dimulai saat Phase 04 secara eksplisit dibuka.
+### Formula payroll existing
+
+- Gaji pokok = hari hadir × gaji/hari
+- Lembur = jam lembur × Rp20.000
+- Potongan telat = jam telat × Rp10.000
+- Total = pokok + lembur − potongan telat + bonus − kasbon
+
+### Tahap lanjutan Phase 04
+
+- Validasi data periode mingguan terhadap production
+- Detail attendance per hari
+- Detail employee/payroll drill-down
+- Verifikasi hasil payroll terhadap aplikasi Absensi lama
+- Final QA sebelum native People dianggap stabil
+- Setelah stabil, baru evaluasi kebutuhan write access dan security model
+
+**Status: SEDANG DIKERJAKAN.**
 
 ## Fase 05 — Unified Service Layer
 
@@ -109,8 +127,6 @@ Membuat interface frontend yang konsisten terhadap backend yang berbeda.
 - Payment
 - Payment Cancellation
 - Final functional QA
-
-Seluruh operasi tersebut telah diuji bertahap pada production frontend tanpa mengubah endpoint atau database backend.
 
 Service layer **tidak menjadi database baru** dan tidak menggabungkan backend WiFi dengan Absensi.
 
@@ -218,4 +234,4 @@ Frontend tidak boleh mengasumsikan bahwa semua module memakai backend yang sama.
 
 ## Definition of success
 
-Nusantara Business dianggap berhasil pada tahap awal apabila pengguna dapat membuka satu frontend dan berpindah antara WiFi dan Absensi tanpa merasa berpindah aplikasi, sementara masing-masing backend tetap berjalan independen dan aman.
+Nusantara Business dianggap berhasil pada tahap awal apabila pengguna dapat membuka satu frontend dan berpindah antara WiFi dan People tanpa merasa berpindah aplikasi, sementara masing-masing backend tetap berjalan independen dan aman.
