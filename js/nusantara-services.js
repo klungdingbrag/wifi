@@ -6,7 +6,7 @@
 'use strict';
 const ROOT=window.Nusantara=window.Nusantara||{},services=ROOT.services=ROOT.services||{},registry=ROOT.serviceRegistry=ROOT.serviceRegistry||{};
 if(registry.__unifiedServiceLayerInstalled)return;
-const state={installed:true,version:'1.5.0',requests:0,successes:0,failures:0,lastRequestAt:0,lastSuccessAt:0,lastFailureAt:0,lastError:''};
+const state={installed:true,version:'1.5.1',requests:0,successes:0,failures:0,lastRequestAt:0,lastSuccessAt:0,lastFailureAt:0,lastError:''};
 function now(){return Date.now()}
 function toError(error,fallback){if(error instanceof Error)return error;if(error&&typeof error.message==='string')return new Error(error.message);return new Error(fallback||'Request service gagal.')}
 function normalize(result){if(result&&typeof result==='object'&&result.success===false)throw new Error(result.message||'Service mengembalikan kegagalan.');return result}
@@ -16,11 +16,11 @@ function snapshot(){return{installed:state.installed,version:state.version,reque
 const legacyApiPost=window.apiPost;
 defineModule('wifi',{getInitialData:function(){if(typeof window.apiGet!=='function')throw new Error('WiFi API belum tersedia.');return window.apiGet('getInitialData')},testConnection:function(){if(typeof window.apiGet!=='function')throw new Error('WiFi API belum tersedia.');return window.apiGet('testConnection')},auditDatabase:function(){if(typeof window.apiGet!=='function')throw new Error('WiFi API belum tersedia.');return window.apiGet('auditDatabase')},get:function(action,params){if(typeof window.apiGet!=='function')throw new Error('WiFi API belum tersedia.');return window.apiGet(action,params||{})},createCustomer:function(payload){if(typeof legacyApiPost!=='function')throw new Error('WiFi API belum tersedia.');return legacyApiPost('addCustomer',payload||{})},updateCustomer:function(payload){if(typeof legacyApiPost!=='function')throw new Error('WiFi API belum tersedia.');return legacyApiPost('updateCustomer',payload||{})},deleteCustomer:function(payload){if(typeof legacyApiPost!=='function')throw new Error('WiFi API belum tersedia.');return legacyApiPost('deleteCustomer',payload||{})},generateBills:function(payload){if(typeof legacyApiPost!=='function')throw new Error('WiFi API belum tersedia.');return legacyApiPost('generateMonthlyBills',payload||{})},payBill:function(payload){if(typeof legacyApiPost!=='function')throw new Error('WiFi API belum tersedia.');return legacyApiPost('payBill',payload||{})},cancelPayment:function(payload){if(typeof legacyApiPost!=='function')throw new Error('WiFi API belum tersedia.');return legacyApiPost('cancelPayment',payload||{})},post:function(action,payload){if(typeof legacyApiPost!=='function')throw new Error('WiFi API belum tersedia.');return legacyApiPost(action,payload||{})}});
 const ABSENSI_URL='https://script.google.com/macros/s/AKfycbwjpeYThkyGewyR8PAY8SxkGPM32-zWkAVniJfzPcLk2yrztpjQPPCECJF3ApKck41_kg/exec';
-function absensiUrl(weekStart){return ABSENSI_URL+'?action=get&weekStart='+encodeURIComponent(weekStart)+'&_='+Date.now()}
+function absensiUrl(weekStart){return ABSENSI_URL+'?action=get&weekStart='+encodeURIComponent(weekStart)}
 async function absensiGet(weekStart){
  if(!weekStart)throw new Error('Periode Absensi wajib ditentukan.');
  let response;
- try{response=await fetch(absensiUrl(weekStart),{method:'GET',cache:'no-store',redirect:'follow'});}catch(error){throw new Error('Koneksi Absensi gagal (Failed to fetch). Detail: '+(error?.message||error));}
+ try{response=await fetch(absensiUrl(weekStart),{method:'GET',cache:'no-store',redirect:'follow'});}catch(error){throw new Error('Koneksi Absensi gagal (Failed to fetch). Endpoint: '+absensiUrl(weekStart)+' Detail: '+(error?.message||error));}
  if(!response.ok)throw new Error('Absensi HTTP '+response.status+'.');
  let result;try{result=await response.json()}catch(error){throw new Error('Respons Absensi bukan JSON. '+(error?.message||''))}
  if(!result||result.success!==true)throw new Error(result?.message||'Respons backend Absensi tidak valid.');
