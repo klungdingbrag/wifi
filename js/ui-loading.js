@@ -2,13 +2,17 @@
  * NUSANTARA WIFI — NON-BLOCKING ACTION LOADING
  * Global refresh/loading + visual feedback untuk tombol.
  * Payment UX tetap ditangani sepenuhnya oleh cancel-payment.js.
- * Phase 05: initial read now consumes the unified WiFi service.
+ * Phase 05: initial read now consumes the unified WiFi service,
+ * with a safe direct-API fallback so the dashboard cannot hang
+ * when the dynamically loaded service layer is unavailable.
  * ============================================================ */
 'use strict';
 
 (function(){
   const ACTION_STYLE_ID='button-action-loading-style';
   const SERVICE_SCRIPT_ID='nusantaraServiceLayerLoader';
+  const SERVICE_READY_TIMEOUT=8000;
+  const DATA_REQUEST_TIMEOUT=20000;
 
   function ensureLoadingUI(){
     if(document.getElementById('syncIndicator')) return;
@@ -114,16 +118,24 @@
     if(missing.length)throw new Error('Respons refresh tidak lengkap: '+missing.join(', ')+'. Data sebelumnya dipertahankan.');
   }
 
+  function withTimeout(promise,ms,message){
+    let timer;
+    const timeout=new Promise((_,reject)=>{
+      timer=setTimeout(()=>reject(new Error(message)),ms);
+    });
+    return Promise.race([promise,timeout]).finally(()=>clearTimeout(timer));
+  }
+
   function ensureServiceLayer(){
     const ready=window.Nusantara?.services?.wifi?.getInitialData;
-    if(typeof ready==='function')return Promise.resolve();
+    if(typeof ready==='function')return Promise.resolve(true);
     const existing=document.getElementById(SERVICE_SCRIPT_ID);
     if(existing){
-      return new Promise((resolve,reject)=>{
+      return new Promise(resolve=>{
         const started=Date.now();
         const poll=()=>{
-          if(typeof window.Nusantara?.services?.wifi?.getInitialData==='function')return resolve();
-          if(Date.now()-started>10000)return reject(new Error('Unified Service Layer belum siap.'));
+          if(typeof window.Nusantara?.services?.wifi?.getInitialData==='function')return resolve(true);
+          if(Date.now()-started>SERVICE_READY_TIMEOUT)return resolve(false);
           setTimeout(poll,25);
         };
         poll();
@@ -133,20 +145,44 @@
     script.id=SERVICE_SCRIPT_ID;
     script.src='js/nusantara-services.js';
     script.async=false;
-    return new Promise((resolve,reject)=>{
-      script.onload=()=>typeof window.Nusantara?.services?.wifi?.getInitialData==='function'
-        ?resolve()
-        :reject(new Error('Unified Service Layer gagal diinisialisasi.'));
-      script.onerror=()=>reject(new Error('Unified Service Layer gagal dimuat.'));
+    return new Promise(resolve=>{
+      let settled=false;
+      const finish=value=>{if(settled)return;settled=true;resolve(value)};
+      script.onload=()=>finish(typeof window.Nusantara?.services?.wifi?.getInitialData==='function');
+      script.onerror=()=>finish(false);
       document.body.appendChild(script);
+      setTimeout(()=>finish(typeof window.Nusantara?.services?.wifi?.getInitialData==='function'),SERVICE_READY_TIMEOUT);
     });
   }
 
   async function getInitialDataViaService(){
-    await ensureServiceLayer();
-    const result=await window.Nusantara.services.wifi.getInitialData();
-    if(!result||result.success!==true)throw new Error('Service WiFi mengembalikan respons tidak valid.');
-    return result.data;
+    /*
+     * The legacy API adapter already exists in app.js and is the
+     * proven production path. Prefer the unified service when it is
+     * available, but never let service boot prevent the dashboard
+     * from loading.
+     */
+    const serviceReady=await ensureServiceLayer();
+    if(serviceReady&&typeof window.Nusantara?.services?.wifi?.getInitialData==='function'){
+      try{
+        const result=await withTimeout(
+          window.Nusantara.services.wifi.getInitialData(),
+          DATA_REQUEST_TIMEOUT,
+          'Timeout saat memuat data WiFi.'
+        );
+        if(!result||result.success!==true)throw new Error('Service WiFi mengembalikan respons tidak valid.');
+        return result.data;
+      }catch(error){
+        console.warn('Unified Service Layer gagal, mencoba API WiFi langsung.',error);
+      }
+    }
+
+    if(typeof window.apiGet!=='function')throw new Error('API WiFi belum siap.');
+    return withTimeout(
+      window.apiGet('getInitialData'),
+      DATA_REQUEST_TIMEOUT,
+      'Timeout saat menghubungi backend WiFi.'
+    );
   }
 
   window.loadInitialData=async function(){
