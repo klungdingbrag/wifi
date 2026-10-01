@@ -4,7 +4,7 @@
  * ============================================================ */
 'use strict';
 
-const API_URL = 'https://script.google.com/macros/s/AKfycbw3xXv41xKe2Lrg3qIaXp_p5wzeSjvotCVrUMgT7SWJiDKBC4rv6DBLeHUkBRsYcQSZg/exec';
+const API_URL = 'https://script.google.com/macros/s/AKfycbw3xXv41xKe2L2rg3qIaXp_p5wzeSjvotCVrUMgT7SWJiDKBC4rv6DBLeHUkBRsYcQSZg/exec';
 const APP = { pelanggan:[], tagihan:[], pembayaran:[], auditLog:[], pengaturan:{}, currentPage:'dashboard' };
 const PAGE_META = { dashboard:['OVERVIEW','Dashboard'], tagihan:['BILLING','Tagihan'], pelanggan:['CUSTOMERS','Pelanggan'], pembayaran:['PAYMENTS','Pembayaran'], histori:['AUDIT TRAIL','Histori'], attendance:['PEOPLE','Absensi'], payroll:['PEOPLE','Payroll'] };
 
