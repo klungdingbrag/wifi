@@ -143,7 +143,7 @@
     }
     const script=document.createElement('script');
     script.id=SERVICE_SCRIPT_ID;
-    script.src='js/nusantara-services.js';
+    script.src='src/js/core/nusantara-services.js';
     script.async=false;
     return new Promise(resolve=>{
       let settled=false;

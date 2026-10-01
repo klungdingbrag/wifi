@@ -9,17 +9,17 @@
 
   function loadThemeSystem(){
     if(document.getElementById('themeSystemLoader'))return;
-    const s=document.createElement('script');s.id='themeSystemLoader';s.src='js/theme-system.js';s.async=false;document.head.appendChild(s);
+    const s=document.createElement('script');s.id='themeSystemLoader';s.src='src/js/core/theme-system.js';s.async=false;document.head.appendChild(s);
   }
 
   function loadModulePolish(){
     if(document.getElementById('modulePolishStyle'))return;
-    const l=document.createElement('link');l.id='modulePolishStyle';l.rel='stylesheet';l.href='css/module-polish.css';document.head.appendChild(l);
+    const l=document.createElement('link');l.id='modulePolishStyle';l.rel='stylesheet';l.href='src/css/module-polish.css';document.head.appendChild(l);
   }
 
   function loadPaymentWorkspace(){
     if(document.getElementById('paymentWorkspaceLoader'))return;
-    const s=document.createElement('script');s.id='paymentWorkspaceLoader';s.src='js/payment-workspace.js';s.async=false;document.body.appendChild(s);
+    const s=document.createElement('script');s.id='paymentWorkspaceLoader';s.src='src/js/pembayaran/payment-workspace.js';s.async=false;document.body.appendChild(s);
   }
 
   function installMobileSidebarStyle(){
